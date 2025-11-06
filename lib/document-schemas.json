@@ -1,0 +1,257 @@
+{
+    "Declaración Aprobada Impuestos DAI": {
+        "año_tributario": 2025,
+        "numero_folio": "321832315",
+        "rol_unico": "12.345.678-9",
+        "nombre_razón_social": "Darío Rojas",
+        "monto_devolucion_solicitado": 234486,
+        "monto_depositado": 239176,
+        "estado": "Depositado",
+        "fecha_deposito": "YYYY-MM-DD",
+        "fecha_declaracion": "YYYY-MM-DD",
+        "fecha_autorizacion": "YYYY-MM-DD",
+        "declaracion_jurada": true
+    },
+    "Liquidaciones de Sueldo": {
+        "nombre": "Juan Gomez",
+        "rut": "12.345.678-9",
+        "periodo": "YYYY-MM",
+        "dias_trabajados": 30,
+        "fecha_ingreso": "YYYY-MM-DD",
+        "cargo": null,
+        "institucion_previsional": "Provida (11,45%)",
+        "institucion_salud": "Fonasa (7,00%)",
+        "base_imponible": 550000,
+        "base_tributable": 445225,
+        "haberes_imponibles": {
+            "sueldo_base": 440000,
+            "gratificacion_legal": 110000
+        },
+        "haberes_no_imponibles": {
+            "colacion": 68000,
+            "movilizacion": 60000
+        },
+        "descuentos": {
+            "cotizacion_previsional_afp": 62975,
+            "institucion_salud": 38500,
+            "seguro_cesantia": 3300,
+            "impuesto_unico": 0
+        },
+        "total_haberes": 678000,
+        "total_descuentos": 104775,
+        "alcance_liquido": 573225,
+        "costo_empresa": 706655
+    },
+    "Acreditación de la Cuota": {
+        "rut": "12.345.678-9",
+        "cuota": 150000,
+        "periodo": "2024-01"
+    },
+    "Créditos": {
+        "tipo": "consumo|hipotecario",
+        "monto": 5000000,
+        "entidad": "Banco Chile"
+    },
+    "Contrato Compraventa de Propiedad": {
+        "comprador": "Juan Pérez",
+        "vendedor": "María Silva",
+        "direccion": "Macul 123",
+        "monto": 80000000
+    },
+    "Pagos de Renta Vitalicia": {
+        "beneficiario": "Pedro Díaz",
+        "monto_mensual": 500000
+    },
+    "Formulario22": {
+        "año_tributario": 2025,
+        "numero_folio": "32183231507",
+        "rol_unico": "12.345.678-K",
+        "apellido_paterno": "Vidal",
+        "apellido_materno": "Saez",
+        "nombres": "Juan José",
+        "domicilio": "Alameda 123",
+        "comuna": "Las Condes",
+        "region": 13,
+        "telefono": null,
+        "correo_electronico": "juan@mail.com",
+        "actividad_profesion_giro": "Servicios Informáticos",
+        "codigo_actividad_economica": "711003",
+        "rut_representante": null,
+        "institucion_bancaria": "Scotiabank",
+        "numero_cuenta": "1110025780",
+        "tipo_cuenta": "C",
+        "moneda_declaracion": "CLP",
+        "fecha_vencimiento_declaracion": "YYYY-MM-DD",
+        "fecha_presentacion": "YYYY-MM-DD",
+        "dividendos_afectos_IGC_IA": 10000000,
+        "remanente_credito_IDPC": 234486,
+        "rentas_capitales_mobiliarios": 0,
+        "iigc_iusc_debito_fiscal": -234486,
+        "incremento_IDPC": 714,
+        "perdida_capitales_mobiliarios": 10234280,
+        "base_imponible_anual": 10234280,
+        "credito_ipdc_devolucion": 234486,
+        "remanente_codigo_119_116": 234486,
+        "rebajas_incremento_impto_primera_categoria": 234486,
+        "credito_impuesto_primera_categoria": 234486,
+        "cpt_positivo_final": 0,
+        "saldo_a_favor": 234486,
+        "monto_devolucion_solicitada": 234486,
+        "total_a_pagar": 0,
+        "impuesto_adeudado": 0,
+        "monto_condonacion": 0,
+        "declaracion_jurada": true
+    },
+    "Avalúo Fiscal": {
+        "rol": "123-456",
+        "avaluo": 60000000,
+        "direccion": "Los Leones 456"
+    },
+    "Cotización de la Propiedad": {
+        "direccion": "Macul 789",
+        "valor_comercial": 75000000
+    },
+    "Informe de Deuda": {
+        "rut": "12.345.678-9",
+        "deuda_total": 3000000,
+        "entidad": "Banco Estado"
+    },
+    "Cédula de Identidad": {
+        "rut": "12.345.678-9",
+        "nombres": "María Paz",
+        "apellidos": "Díaz Uribe",
+        "nacionalidad": "Chilena",
+        "sexo": "F",
+        "fecha_nacimiento": "YYYY-MM-DD",
+        "numero_documento": "123.123.123",
+        "fecha_emision": "YYYY-MM-DD",
+        "fecha_vencimiento": "YYYY-MM-DD",
+        "lugar_nacimiento": "Talca",
+        "profesion": "Ingeniera"
+    },
+    "Carpeta Tributaria": {
+        "rut": "12.345.678-9",
+        "nombre": "Ana Torres",
+        "actividades": [
+            "Comercio",
+            "Servicios"
+        ]
+    },
+    "Certificado de Nacimiento": {
+        "folio": "500010646097",
+        "codigo_verificacion": "dabea310c3d6",
+        "circunscripcion": "VITACURA",
+        "numero_inscripcion": "3146",
+        "año_registro": "YYYY",
+        "nombre": "Ana Matte",
+        "rut": "12.345.678-1",
+        "fecha_nacimiento": "YYYY-MM-DD",
+        "hora_nacimiento": "HH:MM",
+        "sexo": "Femenino",
+        "padre": {
+            "nombre": "José Matte",
+            "rut": "12.345.678-2"
+        },
+        "madre": {
+            "nombre": "Carla Ruiz",
+            "rut": "12.345.678-3"
+        },
+        "fecha_emision": "YYYY-MM-DD"
+    },
+    "Cartón Subsidio DS1": {
+        "beneficiario": "Luis Flores",
+        "monto": 800,
+        "tipo": "DS1"
+    },
+    "Fondos, Depósitos y Cuentas": {
+        "titular": "Juan Moya",
+        "banco": "Santander",
+        "saldo": 5000000
+    },
+    "Últimas dos DAI": [
+        {
+            "approved": true,
+            "year": "YYYY",
+            "owner": "Juan Pérez"
+        }
+    ],
+    "Contrato de Arriendo": {
+        "arrendador": "Pedro Soto",
+        "arrendatario": "Pía Vega",
+        "direccion": "Macul 234",
+        "monto_mensual": 400000
+    },
+    "Balance Anual": {
+        "empresa": "Comercial ABC Ltda",
+        "year": "YYYY",
+        "activos": 50000000,
+        "pasivos": 30000000
+    },
+    "Certificado de Matrimonio": {
+        "folio": "500514837126",
+        "codigo_verificacion": "bca3c6ec8cde",
+        "circunscripcion": "PROVIDENCIA",
+        "numero_inscripcion": "205",
+        "año_registro": 2008,
+        "marido": {
+            "nombre": "Mario Pérez",
+            "rut": "12.345.678-9",
+            "fecha_nacimiento": "YYYY-MM-DD"
+        },
+        "mujer": {
+            "nombre": "Ana Mira",
+            "rut": "12.345.678-9",
+            "fecha_nacimiento": "YYYY-MM-DD"
+        },
+        "fecha_celebracion": "YYYY-MM-DD",
+        "hora_celebracion": "HH:MM",
+        "regimen_patrimonial": "Separación total de bienes",
+        "fecha_emision": "YYYY-MM-DD"
+    },
+    "Certificado de No Matrimonio": {
+        "rut": "12.345.678-9",
+        "nombre": "Andrés Pinto"
+    },
+    "Certificado de Empleador": {
+        "empleador": "Empresa XYZ S.A.",
+        "empleado": "María Mora",
+        "cargo": "Analista",
+        "fecha_ingreso": "YYYY-MM-DD"
+    },
+    "Padrón de Vehículo": {
+        "inscripcion": "XXXXX.11-2",
+        "rut_propietario": "12.345.678-9",
+        "propietario": "Ana Mira",
+        "domicilio": "Lira 820",
+        "comuna": "Colina",
+        "fecha_adquisicion": "YYYY-MM-DD",
+        "fecha_inscripcion": "YYYY-MM-DD",
+        "fecha_emision": "YYYY-MM-DD",
+        "marca": "Toyota",
+        "modelo": "Corolla",
+        "motor": "12345678901234567",
+        "chasis": "12345678901234567",
+        "color": "Blanco",
+        "año": "YYYY"
+    },
+    "Certificado de Cotizaciones": {
+        "rut": "12.345.678-9",
+        "nombre": "Ana Cortés",
+        "periodo": "YYYY-MM",
+        "monto_cotizado": 120000
+    },
+    "Pagos de Arriendo": {
+        "arrendatario": "Matías Bravo",
+        "periodo": "YYYY-MM",
+        "monto": 350000
+    },
+    "Resumen de Boletas Anual": {
+        "rut": "12.345.678-9",
+        "year": "YYYY",
+        "total_boletas": 156,
+        "monto_total": 18000000
+    },
+    "Unknown": {
+        "message": "Tipo de documento no reconocido"
+    }
+}
