@@ -10,6 +10,7 @@ export default function ParserUI() {
   const [json, setJson] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
 
@@ -46,10 +47,41 @@ export default function ParserUI() {
     }
   }, [url, method, file])
 
-  const handleFile = (f?: File) => f && setFile(f)
+  useEffect(() => {
+    if (file) handleSend()
+  }, [file])
+
+  const handleFile = (f?: File) => {
+    if (!f) return
+    if (preview) URL.revokeObjectURL(preview)
+    setFile(f)
+    if (f.type.startsWith('image/')) {
+      setPreview(URL.createObjectURL(f))
+    } else if (f.type === 'application/pdf') {
+      const blobUrl = URL.createObjectURL(f)
+      setPreview(blobUrl)
+    } else {
+      setPreview(null)
+    }
+  }
+
+  useEffect(() => {
+    return () => { if (preview) URL.revokeObjectURL(preview) }
+  }, [preview])
+
+  const formatSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  }
+
+  const formatDate = (timestamp: number) => {
+    const d = new Date(timestamp)
+    return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
+  }
 
   return (
-    <main className='min-h-screen flex flex-col bg-[#1b1b1b] text-gray-200 font-mono'>
+    <main className='h-screen flex flex-col bg-[#1b1b1b] text-gray-200 font-mono'>
       <header className='flex items-center border-b border-gray-700 bg-[#242424] p-3 gap-3'>
         <select
           className={`px-2 py-1 rounded font-bold text-sm border border-gray-700 bg-[#1b1b1b] focus:outline-none ${method === 'POST' ? 'text-amber-400' : 'text-blue-400'}`}
@@ -67,11 +99,13 @@ export default function ParserUI() {
         />
 
         <button
-          className='bg-amber-500 hover:bg-amber-400 px-4 py-1 rounded text-sm font-bold text-black'
+          className='bg-amber-500 hover:bg-amber-400 px-4 py-1 rounded text-sm font-bold text-black flex items-center justify-center'
           onClick={handleSend}
           disabled={loading}
         >
-          Enviar
+          <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+          </svg>
         </button>
 
         <input
@@ -83,37 +117,59 @@ export default function ParserUI() {
         />
       </header>
 
-      <section className='flex flex-1'>
+      <section className='flex flex-1 overflow-hidden'>
         <div
           onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
           onDragOver={e => e.preventDefault()}
           onClick={() => document.getElementById('fileInput')?.click()}
-          className='flex items-center justify-center border-r border-gray-700 bg-[#202020] hover:bg-[#272727] flex-col cursor-pointer transition'
+          className='flex border-r border-gray-700 bg-[#202020] hover:bg-[#272727] flex-col cursor-pointer transition pt-6'
           style={{ width: '420px', minWidth: '380px' }}
         >
-          <div className='border-2 border-dashed border-gray-600 rounded-lg w-80 h-64 my-12 flex flex-col items-center justify-center text-center text-gray-400 hover:border-amber-400 transition'>
-            {file
-              ? <>
-                <span className='text-amber-400 mb-1'>{file.name}</span>
-                <span className='text-xs text-gray-500'>Listo para enviar</span>
+          <div className='border-2 border-dashed border-gray-600 rounded-lg w-80 h-64 mx-auto flex flex-col items-center justify-center text-center text-gray-400 hover:border-amber-400 transition p-4 overflow-hidden'>
+            {file ? (
+              preview && file.type === 'application/pdf' ? (
+                <iframe
+                  src={preview}
+                  className='w-40 h-52 border rounded mb-2 pointer-events-none bg-white'
+                />
+              ) : preview ? (
+                <img
+                  src={preview}
+                  alt={file.name}
+                  className='max-w-full max-h-40 object-contain mb-2 rounded'
+                />
+              ) : (
+                <svg className='w-16 h-16 text-red-400 mb-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' />
+                </svg>
+              )
+            ) : (
+              <span>Arrastra o haz clic para subir un archivo</span>
+            )}
+            {file && (
+              <>
+                <span className='text-amber-400 text-sm truncate'>{file.name}</span>
+                <span className='text-xs text-gray-500 mt-1'>
+                  {formatSize(file.size)} • {formatDate(file.lastModified)}
+                </span>
               </>
-              : <span>Arrastra o haz clic para subir un archivo</span>}
+            )}
           </div>
         </div>
 
-        <div className='flex-1 bg-[#151515] p-6 overflow-auto'>
-          {error && <p className='text-red-400 text-sm'>{error}</p>}
+        <div className='flex-1 flex flex-col bg-[#151515] p-6 overflow-hidden'>
+          {error && <p className='text-red-400 text-sm mb-4'>{error}</p>}
           {loading ? (
-            <div className='flex flex-col items-center justify-center h-full text-amber-400'>
+            <div className='flex flex-col items-center justify-center flex-1 text-amber-400'>
               <p className='font-semibold mb-1'>Esperando respuesta…</p>
               <p className='text-sm'>{elapsed}s</p>
             </div>
           ) : json ? (
-            <pre className='text-amber-300 text-xs whitespace-pre-wrap break-all'>
+            <pre className='text-amber-300 text-xs whitespace-pre-wrap break-all overflow-auto flex-1 p-4 bg-[#0d0d0d] rounded border border-gray-800'>
               {JSON.stringify(json, null, 2)}
             </pre>
           ) : (
-            <div className='flex flex-col items-center justify-center h-full text-gray-500 text-sm'>
+            <div className='flex flex-col items-center justify-center flex-1 text-gray-500 text-sm'>
               <p className='text-amber-400 mb-2 font-semibold'>Listo para procesar</p>
               <p>Sube un PDF o imagen y presiona <strong>Enviar</strong>.</p>
               <p className='mt-1 text-xs text-gray-600'>El resultado JSON aparecerá aquí.</p>

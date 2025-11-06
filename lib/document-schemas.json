@@ -66,7 +66,7 @@
         "año_tributario": 2025,
         "numero_folio": "32183231507",
         "rol_unico": "12.345.678-K",
-        "apellido_paterno": "Vidal",
+        "apellido_paterno": "Jara",
         "apellido_materno": "Saez",
         "nombres": "Juan José",
         "domicilio": "Alameda 123",
@@ -168,13 +168,11 @@
         "banco": "Santander",
         "saldo": 5000000
     },
-    "Últimas dos DAI": [
-        {
-            "approved": true,
-            "year": "YYYY",
-            "owner": "Juan Pérez"
-        }
-    ],
+    "Últimas dos DAI": {
+        "approved": true,
+        "year": "YYYY",
+        "owner": "Juan Pérez"
+    },
     "Contrato de Arriendo": {
         "arrendador": "Pedro Soto",
         "arrendatario": "Pía Vega",
@@ -245,11 +243,92 @@
         "periodo": "YYYY-MM",
         "monto": 350000
     },
-    "Resumen de Boletas Anual": {
+    "Informe Anual de Boletas de Honorarios": {
         "rut": "12.345.678-9",
-        "year": "YYYY",
-        "total_boletas": 156,
-        "monto_total": 18000000
+        "contribuyente": "Nombre Contribuyente",
+        "año": 2025,
+        "totales": {
+            "boletas_vigentes": 10,
+            "boletas_anuladas": 0,
+            "honorario_bruto": 35087720,
+            "retencion_terceros": 5087720,
+            "retencion_contribuyente": 0,
+            "total_liquido": 30000000
+        },
+        "meses": {
+            "enero": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "febrero": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "marzo": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "abril": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "mayo": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "junio": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "julio": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "agosto": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "septiembre": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "octubre": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "noviembre": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            },
+            "diciembre": {
+                "boletas": 0,
+                "bruto": 0,
+                "retencion": 0,
+                "liquido": 0
+            }
+        }
     },
     "Unknown": {
         "message": "Tipo de documento no reconocido"
