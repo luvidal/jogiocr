@@ -3,17 +3,19 @@ import formidable from 'formidable'
 import fsSync from 'fs'
 import fs from 'fs/promises'
 import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import documentSchemas from '@/lib/document-schemas.json'
 
 export const config = { api: { bodyParser: false } }
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
 
-  const requiredKey = process.env.API_KEY
+  const requiredKey = process.env.INTERNAL_API_KEY
   if (requiredKey) {
     const headerKeyRaw = req.headers['x-api-key']
     const headerKey = Array.isArray(headerKeyRaw) ? headerKeyRaw[0] : headerKeyRaw
@@ -21,20 +23,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const bearer = auth && auth.startsWith('Bearer ') ? auth.slice(7) : undefined
     const provided = headerKey || bearer
 
-    if (provided !== requiredKey) {
+    if (provided !== requiredKey)
       return res.status(401).json({ error: 'Unauthorized' })
-    }
-  }
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return res.status(500).json({
-      error: 'Server not configured',
-      details: 'Missing ANTHROPIC_API_KEY environment variable.'
-    })
   }
 
   const [fields, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
+  const model = Array.isArray(fields.model) ? fields.model[0] : fields.model || 'claude'
   const file = Array.isArray(files.file) ? files.file[0] : files.file
+
   if (!file?.filepath || !file?.mimetype)
     return res.status(400).json({ error: 'Invalid file' })
 
@@ -43,11 +39,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (!isImage && !isPDF)
     return res.status(400).json({ error: 'Images and PDFs only' })
 
+  if (model === 'claude' && !process.env.ANTHROPIC_API_KEY)
+    return res.status(500).json({ error: 'Missing ANTHROPIC_API_KEY' })
+
+  if (model === 'gpt5' && !process.env.OPENAI_API_KEY)
+    return res.status(500).json({ error: 'Missing OPENAI_API_KEY' })
+
   try {
     const base64 = fsSync.readFileSync(file.filepath).toString('base64')
 
-    const prompt = `
-You are a JSON API specialized in analyzing Chilean documents.
+    const prompt = `You are a JSON API specialized in analyzing Chilean documents.
 Your goal is to return ONLY a valid JSON object. Never include text, markdown, or explanations.
 
 You know these document schemas:
@@ -69,39 +70,64 @@ If it does NOT match any known schema:
 Rules:
 - Output must be strictly valid JSON.
 - Never include commentary, markdown, or extra text.
-- Use numbers for numeric values when possible.
-`
+- Use numbers for numeric values when possible.`
 
-    const content: Anthropic.MessageCreateParamsNonStreaming['messages'][number]['content'] = [
-      { type: 'text', text: prompt },
-      isPDF
-        ? {
-          type: 'document',
-          source: {
-            type: 'base64',
-            media_type: 'application/pdf',
-            data: base64
+    let text = ''
+
+    if (model === 'gpt5') {
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'text', text: prompt },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${file.mimetype};base64,${base64}`
+                }
+              }
+            ]
           }
-        }
-        : {
-          type: 'image',
-          source: {
-            type: 'base64',
-            media_type: file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
-            data: base64
+        ],
+        max_tokens: 2048,
+        temperature: 0
+      })
+      text = response.choices[0]?.message?.content || '{}'
+    } else {
+      const content: Anthropic.MessageCreateParamsNonStreaming['messages'][number]['content'] = [
+        { type: 'text', text: prompt },
+        isPDF
+          ? {
+            type: 'document',
+            source: {
+              type: 'base64',
+              media_type: 'application/pdf',
+              data: base64
+            }
           }
-        }
-    ]
+          : {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
+              data: base64
+            }
+          }
+      ]
 
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 2048,
-      temperature: 0,
-      messages: [{ role: 'user', content }]
-    })
+      const message = await anthropic.messages.create({
+        model: 'claude-3-5-haiku-20241022',
+        max_tokens: 2048,
+        temperature: 0,
+        messages: [{ role: 'user', content }]
+      })
 
-    const textBlock = message.content.find(b => b.type === 'text')
-    let text = textBlock && 'text' in textBlock ? textBlock.text : '{}'
+      const textBlock = message.content.find(b => b.type === 'text')
+      text = textBlock && 'text' in textBlock ? textBlock.text : '{}'
+    }
+
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const match = text.match(/\{[\s\S]*\}/)
     if (match) text = match[0]

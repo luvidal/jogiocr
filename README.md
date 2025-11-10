@@ -36,14 +36,14 @@ cp .env.example .env.local
 
 - Edit `.env.local` and set:
   - `ANTHROPIC_API_KEY` — server-side key from Anthropic.
-  - `API_KEY` — shared secret to access `/api/parser`.
+  - `INTERNAL_API_KEY` — shared secret to access `/api/parser`.
   - `NEXT_PUBLIC_ENVIRONMENT` — optional; set to `development` locally.
 
 Next.js automatically loads `.env.local`. The API route will return a clear error if `ANTHROPIC_API_KEY` is missing.
 
 ### Deployment
 
-- Vercel: set `ANTHROPIC_API_KEY` and `API_KEY` in Project Settings → Environment Variables.
+- Vercel: set `ANTHROPIC_API_KEY` and `INTERNAL_API_KEY` in Project Settings → Environment Variables.
 - Do not commit real keys. `.env*` files are ignored by `.gitignore`.
 
 ## Learn More

@@ -1,12 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 
 export default function ParserUI() {
-  const base = process.env.NEXT_PUBLIC_ENVIRONMENT === 'development'
-    ? 'http://localhost:3000'
-    : 'https://ocr.jogi.cl'
-
-  const [method, setMethod] = useState<'POST' | 'GET'>('POST')
-  const [url, setUrl] = useState(`${base}/api/parser`)
+  const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
+  const [url, setUrl] = useState('')
+  const [apiKey, setApiKey] = useState('')
   const [json, setJson] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -15,28 +12,38 @@ export default function ParserUI() {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
+    setUrl(`${window.location.origin}/api/parser`)
+    const stored = localStorage.getItem('api-key')
+    if (stored) setApiKey(stored)
+  }, [])
+
+  useEffect(() => {
     if (!loading) return
     setElapsed(0)
     const i = setInterval(() => setElapsed(t => t + 1), 1000)
     return () => clearInterval(i)
   }, [loading])
 
+  const handleApiKeyChange = (key: string) => {
+    setApiKey(key)
+    localStorage.setItem('api-key', key)
+  }
+
   const handleSend = useCallback(async () => {
     setLoading(true)
     setError(null)
     setJson(null)
     try {
-      const res = method === 'GET'
-        ? await fetch(url)
-        : await fetch(url, {
-          method: 'POST',
-          body: (() => {
-            if (!file) throw new Error('Selecciona o arrastra un archivo')
-            const form = new FormData()
-            form.append('file', file)
-            return form
-          })()
-        })
+      if (!file) throw new Error('Selecciona o arrastra un archivo')
+      const form = new FormData()
+      form.append('file', file)
+      form.append('model', model)
+
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'x-api-key': apiKey },
+        body: form
+      })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error al procesar')
       setJson(data)
@@ -45,11 +52,15 @@ export default function ParserUI() {
     } finally {
       setLoading(false)
     }
-  }, [url, method, file])
+  }, [url, model, file, apiKey])
 
   useEffect(() => {
     if (file) handleSend()
   }, [file])
+
+  useEffect(() => {
+    if (file && apiKey && url) handleSend()
+  }, [model])
 
   const handleFile = (f?: File) => {
     if (!f) return
@@ -82,39 +93,53 @@ export default function ParserUI() {
 
   return (
     <main className='h-screen flex flex-col bg-[#1b1b1b] text-gray-200 font-mono'>
-      <header className='flex items-center border-b border-gray-700 bg-[#242424] p-3 gap-3'>
-        <select
-          className={`px-2 py-1 rounded font-bold text-sm border border-gray-700 bg-[#1b1b1b] focus:outline-none ${method === 'POST' ? 'text-amber-400' : 'text-blue-400'}`}
-          value={method}
-          onChange={e => setMethod(e.target.value as 'POST' | 'GET')}
-        >
-          <option value='POST'>POST</option>
-          <option value='GET'>GET</option>
-        </select>
+      <header className='border-b border-gray-700 bg-[#242424] p-3'>
+        <div className='flex items-center gap-3 mb-2'>
+          <select
+            className='w-24 px-2 py-1 rounded font-bold text-sm border border-gray-700 bg-[#1b1b1b] focus:outline-none text-amber-400'
+            value={model}
+            onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
+          >
+            <option value='claude'>Claude</option>
+            <option value='gpt5'>GPT-5</option>
+          </select>
 
-        <input
-          className='flex-1 bg-[#1b1b1b] border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none'
-          value={url}
-          onChange={e => setUrl(e.target.value)}
-        />
+          <input
+            className='flex-1 bg-[#1b1b1b] border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none'
+            value={url}
+            onChange={e => setUrl(e.target.value)}
+          />
 
-        <button
-          className='bg-amber-500 hover:bg-amber-400 px-4 py-1 rounded text-sm font-bold text-black flex items-center justify-center'
-          onClick={handleSend}
-          disabled={loading}
-        >
-          <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
-          </svg>
-        </button>
+          <button
+            className='bg-amber-500 hover:bg-amber-400 px-4 py-1 rounded text-sm font-bold text-black flex items-center justify-center'
+            onClick={handleSend}
+            disabled={loading}
+          >
+            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+            </svg>
+          </button>
 
-        <input
-          id='fileInput'
-          type='file'
-          accept='image/*,application/pdf'
-          className='hidden'
-          onChange={e => handleFile(e.target.files?.[0])}
-        />
+          <input
+            id='fileInput'
+            type='file'
+            accept='image/*,application/pdf'
+            className='hidden'
+            onChange={e => handleFile(e.target.files?.[0])}
+          />
+        </div>
+
+        <div className='flex items-center gap-3'>
+          <span className='w-24 px-2 py-1 text-xs text-gray-400'>Secret</span>
+
+          <input
+            type='password'
+            className='flex-1 bg-[#1b1b1b] border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none'
+            placeholder='API Key'
+            value={apiKey}
+            onChange={e => handleApiKeyChange(e.target.value)}
+          />
+        </div>
       </header>
 
       <section className='flex flex-1 overflow-hidden'>
