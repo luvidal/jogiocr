@@ -30,11 +30,23 @@ export default function ParserUI() {
   }
 
   const handleSend = useCallback(async () => {
+    if (!file) {
+      alert('Falta: Archivo')
+      return
+    }
+    if (!url) {
+      alert('Falta: URL')
+      return
+    }
+    if (!apiKey) {
+      alert('Falta: API Key')
+      return
+    }
+
     setLoading(true)
     setError(null)
     setJson(null)
     try {
-      if (!file) throw new Error('Selecciona o arrastra un archivo')
       const form = new FormData()
       form.append('file', file)
       form.append('model', model)
@@ -55,7 +67,7 @@ export default function ParserUI() {
   }, [url, model, file, apiKey])
 
   useEffect(() => {
-    if (file) handleSend()
+    if (file && apiKey && url) handleSend()
   }, [file])
 
   useEffect(() => {
