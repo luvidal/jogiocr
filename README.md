@@ -24,6 +24,28 @@ The `pages/api` directory is mapped to `/api/*`. Files in this directory are tre
 
 This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Environment Setup
+
+This project requires a server-side key for Anthropic and a shared access key to gate the parser route.
+
+- Copy `.env.example` to `.env.local` and set your values:
+
+```
+cp .env.example .env.local
+```
+
+- Edit `.env.local` and set:
+  - `ANTHROPIC_API_KEY` — server-side key from Anthropic.
+  - `API_KEY` — shared secret to access `/api/parser`.
+  - `NEXT_PUBLIC_ENVIRONMENT` — optional; set to `development` locally.
+
+Next.js automatically loads `.env.local`. The API route will return a clear error if `ANTHROPIC_API_KEY` is missing.
+
+### Deployment
+
+- Vercel: set `ANTHROPIC_API_KEY` and `API_KEY` in Project Settings → Environment Variables.
+- Do not commit real keys. `.env*` files are ignored by `.gitignore`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

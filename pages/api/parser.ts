@@ -13,6 +13,26 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (req.method !== 'POST')
     return res.status(405).json({ error: 'Method not allowed' })
 
+  const requiredKey = process.env.API_KEY
+  if (requiredKey) {
+    const headerKeyRaw = req.headers['x-api-key']
+    const headerKey = Array.isArray(headerKeyRaw) ? headerKeyRaw[0] : headerKeyRaw
+    const auth = req.headers.authorization
+    const bearer = auth && auth.startsWith('Bearer ') ? auth.slice(7) : undefined
+    const provided = headerKey || bearer
+
+    if (provided !== requiredKey) {
+      return res.status(401).json({ error: 'Unauthorized' })
+    }
+  }
+
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({
+      error: 'Server not configured',
+      details: 'Missing ANTHROPIC_API_KEY environment variable.'
+    })
+  }
+
   const [fields, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
   const file = Array.isArray(files.file) ? files.file[0] : files.file
   if (!file?.filepath || !file?.mimetype)
