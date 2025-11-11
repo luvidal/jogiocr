@@ -1,20 +1,20 @@
 {
-    "Declaración Aprobada Impuestos DAI": {
-        "año_tributario": 2025,
-        "numero_folio": "321832315",
-        "rol_unico": "12.345.678-9",
-        "nombre_razón_social": "Darío Rojas",
-        "monto_devolucion_solicitado": 234486,
-        "monto_depositado": 239176,
-        "estado": "Depositado",
-        "fecha_deposito": "YYYY-MM-DD",
-        "fecha_declaracion": "YYYY-MM-DD",
-        "fecha_autorizacion": "YYYY-MM-DD",
-        "declaracion_jurada": true
+    "Certificado Declaración Aprobada Impuestos DAI": {
+        "folio": 326722234,
+        "nombre_contribuyente": "Darío Rojas",
+        "rut": "11.111.111-1",
+        "año_tributario": 2024,
+        "fecha_recepcion": "YYYY-MM-DD",
+        "base_imponible_primera_categoria": 133971,
+        "subtotal_rentas_global_complementario": 54710551,
+        "retenciones": 135445,
+        "total_a_pagar": 135445,
+        "fecha_emision": "YYYY-MM-DD",
+        "tipo_ingreso": "W"
     },
     "Liquidaciones de Sueldo": {
         "nombre": "Juan Gomez",
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "periodo": "YYYY-MM",
         "dias_trabajados": 30,
         "fecha_ingreso": "YYYY-MM-DD",
@@ -43,7 +43,7 @@
         "costo_empresa": 706655
     },
     "Acreditación de la Cuota": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "cuota": 150000,
         "periodo": "2024-01"
     },
@@ -65,7 +65,7 @@
     "Formulario22": {
         "año_tributario": 2025,
         "numero_folio": "32183231507",
-        "rol_unico": "12.345.678-K",
+        "rol_unico": "11.111.111-1",
         "apellido_paterno": "Jara",
         "apellido_materno": "Saez",
         "nombres": "Juan José",
@@ -112,12 +112,12 @@
         "valor_comercial": 75000000
     },
     "Informe de Deuda": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "deuda_total": 3000000,
         "entidad": "Banco Estado"
     },
     "Cédula de Identidad": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "nombres": "María Paz",
         "apellidos": "Díaz Uribe",
         "nacionalidad": "Chilena",
@@ -130,7 +130,7 @@
         "profesion": "Ingeniera"
     },
     "Carpeta Tributaria": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "nombre": "Ana Torres",
         "actividades": [
             "Comercio",
@@ -144,17 +144,17 @@
         "numero_inscripcion": "3146",
         "año_registro": "YYYY",
         "nombre": "Ana Matte",
-        "rut": "12.345.678-1",
+        "rut": "11.111.111-1",
         "fecha_nacimiento": "YYYY-MM-DD",
         "hora_nacimiento": "HH:MM",
         "sexo": "Femenino",
         "padre": {
             "nombre": "José Matte",
-            "rut": "12.345.678-2"
+            "rut": "11.111.111-2"
         },
         "madre": {
-            "nombre": "Carla Ruiz",
-            "rut": "12.345.678-3"
+            "nombre": "Ana Ruiz",
+            "rut": "11.111.111-3"
         },
         "fecha_emision": "YYYY-MM-DD"
     },
@@ -193,12 +193,12 @@
         "año_registro": 2008,
         "marido": {
             "nombre": "Mario Pérez",
-            "rut": "12.345.678-9",
+            "rut": "11.111.111-1",
             "fecha_nacimiento": "YYYY-MM-DD"
         },
         "mujer": {
             "nombre": "Ana Mira",
-            "rut": "12.345.678-9",
+            "rut": "11.111.111-1",
             "fecha_nacimiento": "YYYY-MM-DD"
         },
         "fecha_celebracion": "YYYY-MM-DD",
@@ -207,7 +207,7 @@
         "fecha_emision": "YYYY-MM-DD"
     },
     "Certificado de No Matrimonio": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "nombre": "Andrés Pinto"
     },
     "Certificado de Empleador": {
@@ -218,7 +218,7 @@
     },
     "Padrón de Vehículo": {
         "inscripcion": "XXXXX.11-2",
-        "rut_propietario": "12.345.678-9",
+        "rut_propietario": "11.111.111-1",
         "propietario": "Ana Mira",
         "domicilio": "Lira 820",
         "comuna": "Colina",
@@ -233,7 +233,7 @@
         "año": "YYYY"
     },
     "Certificado de Cotizaciones": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "nombre": "Ana Cortés",
         "periodo": "YYYY-MM",
         "monto_cotizado": 120000
@@ -244,7 +244,7 @@
         "monto": 350000
     },
     "Informe Anual de Boletas de Honorarios": {
-        "rut": "12.345.678-9",
+        "rut": "11.111.111-1",
         "contribuyente": "Nombre Contribuyente",
         "año": 2025,
         "totales": {
