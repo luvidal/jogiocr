@@ -4,12 +4,37 @@ import fsSync from 'fs'
 import fs from 'fs/promises'
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
-import documentSchemas from '@/lib/document-schemas.json'
+import { execute } from './helpers'
 
 export const config = { api: { bodyParser: false } }
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+
+let schemasCache: Record<string, any> = {}
+let doctypeMapCache: Record<string, { id: string, label: string }> = {}
+let lastFetch = 0
+const CACHE_TTL = 3600000
+
+async function loadSchemas() {
+  if (Object.keys(schemasCache).length && Date.now() - lastFetch < CACHE_TTL)
+    return { schemas: schemasCache, map: doctypeMapCache }
+
+  const rows = await execute('_hooks.sp_get_doctypes_all')
+
+  schemasCache = {}
+  doctypeMapCache = {}
+
+  for (const row of rows) {
+    if (row.fields) {
+      schemasCache[row.label] = JSON.parse(row.fields)
+      doctypeMapCache[row.label] = { id: row.doctypeid, label: row.label }
+    }
+  }
+
+  lastFetch = Date.now()
+  return { schemas: schemasCache, map: doctypeMapCache }
+}
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST')
@@ -20,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const headerKeyRaw = req.headers['x-api-key']
     const headerKey = Array.isArray(headerKeyRaw) ? headerKeyRaw[0] : headerKeyRaw
     const auth = req.headers.authorization
-    const bearer = auth && auth.startsWith('Bearer ') ? auth.slice(7) : undefined
+    const bearer = auth?.startsWith('Bearer ') ? auth.slice(7) : undefined
     const provided = headerKey || bearer
 
     if (provided !== requiredKey)
@@ -46,51 +71,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(500).json({ error: 'Missing OPENAI_API_KEY' })
 
   try {
+    const { schemas, map } = await loadSchemas()
     const base64 = fsSync.readFileSync(file.filepath).toString('base64')
+    console.log(schemas)
+    const prompt = `Extract data from this Chilean document as JSON.
 
-    const prompt = `You are a JSON API specialized in analyzing Chilean documents.
-Your goal is to return ONLY a valid JSON object. Never include text, markdown, or explanations.
+Known schemas:
+${JSON.stringify(schemas, null, 2)}
 
-You know these document schemas:
-${JSON.stringify(documentSchemas, null, 2)}
-
-If the document clearly matches a known schema, return it using that exact schema.
-
-If it does NOT match any known schema:
-- Extract every relevant field and its real value from the document (names, dates, amounts, RUT, etc.).
-- Use Spanish snake_case keys for all field names (e.g., nombre, rut, fecha_emision, monto_total).
-- The values must be the actual data found in the document, not examples or placeholders.
-- Guess the document type if possible (e.g., "Liquidación de Sueldo", "Certificado AFP"); otherwise use "documento_nuevo".
-- Return a single JSON object in this format:
-  {
-    "document_type": "<in Spanish>",
-    "data": { <extracted_fields> }
-  }
+Match a schema if possible, otherwise extract all fields.
+Use exact schema names as keys.
 
 Rules:
-- Output must be strictly valid JSON.
-- Never include commentary, markdown, or extra text.
-- Use numbers for numeric values when possible.`
+- ONLY JSON output
+- Numbers as numbers
+- Spanish snake_case keys
+- No markdown/text`
 
     let text = ''
 
     if (model === 'gpt5') {
       const response = await openai.chat.completions.create({
         model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: prompt },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${file.mimetype};base64,${base64}`
-                }
-              }
-            ]
-          }
-        ],
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'text', text: prompt },
+            { type: 'image_url', image_url: { url: `data:${file.mimetype};base64,${base64}` } }
+          ]
+        }],
         max_tokens: 2048,
         temperature: 0
       })
@@ -99,22 +108,8 @@ Rules:
       const content: Anthropic.MessageCreateParamsNonStreaming['messages'][number]['content'] = [
         { type: 'text', text: prompt },
         isPDF
-          ? {
-            type: 'document',
-            source: {
-              type: 'base64',
-              media_type: 'application/pdf',
-              data: base64
-            }
-          }
-          : {
-            type: 'image',
-            source: {
-              type: 'base64',
-              media_type: file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif',
-              data: base64
-            }
-          }
+          ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } }
+          : { type: 'image', source: { type: 'base64', media_type: file.mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', data: base64 } }
       ]
 
       const message = await anthropic.messages.create({
@@ -132,9 +127,19 @@ Rules:
     const match = text.match(/\{[\s\S]*\}/)
     if (match) text = match[0]
 
-    const result = JSON.parse(text)
+    const parsed = JSON.parse(text)
+    const schemaKey = Object.keys(parsed)[0]
+    const doctype = map[schemaKey]
+    const data = parsed[schemaKey] || parsed
+
     fs.unlink(file.filepath).catch(() => { })
-    res.json(result)
+
+    res.json({
+      doctypeid: doctype?.id || null,
+      label: doctype?.label || null,
+      matched: !!doctype,
+      data
+    })
   } catch (e) {
     console.error('Error:', e)
     res.status(500).json({

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 
-export default function ParserUI() {
+export default function Home() {
   const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
   const [url, setUrl] = useState('')
   const [apiKey, setApiKey] = useState('')
@@ -12,7 +12,7 @@ export default function ParserUI() {
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
-    setUrl(`${window.location.origin}/api/parser`)
+    setUrl(`${window.location.origin}/api/ocr`)
     const stored = localStorage.getItem('api-key')
     if (stored) setApiKey(stored)
   }, [])
