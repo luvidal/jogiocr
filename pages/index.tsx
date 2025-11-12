@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 
 export default function Home() {
   const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
+  const [doctype, setDoctype] = useState<string>('')
+  const [doctypes, setDoctypes] = useState<Array<{ doctypeid: string, label: string }>>([])
   const [url, setUrl] = useState('')
-  const [apiKey, setApiKey] = useState('')
   const [json, setJson] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -13,8 +14,10 @@ export default function Home() {
 
   useEffect(() => {
     setUrl(`${window.location.origin}/api/ocr`)
-    const stored = localStorage.getItem('api-key')
-    if (stored) setApiKey(stored)
+    fetch('/api/v1/doctypes/listall')
+      .then(r => r.json())
+      .then(setDoctypes)
+      .catch(console.error)
   }, [])
 
   useEffect(() => {
@@ -23,11 +26,6 @@ export default function Home() {
     const i = setInterval(() => setElapsed(t => t + 1), 1000)
     return () => clearInterval(i)
   }, [loading])
-
-  const handleApiKeyChange = (key: string) => {
-    setApiKey(key)
-    localStorage.setItem('api-key', key)
-  }
 
   const handleSend = useCallback(async () => {
     if (!file) {
@@ -38,10 +36,6 @@ export default function Home() {
       alert('Falta: URL')
       return
     }
-    if (!apiKey) {
-      alert('Falta: API Key')
-      return
-    }
 
     setLoading(true)
     setError(null)
@@ -50,10 +44,10 @@ export default function Home() {
       const form = new FormData()
       form.append('file', file)
       form.append('model', model)
+      if (doctype) form.append('doctype', doctype)
 
       const res = await fetch(url, {
         method: 'POST',
-        headers: { 'x-api-key': apiKey },
         body: form
       })
       const data = await res.json()
@@ -64,15 +58,15 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
-  }, [url, model, file, apiKey])
+  }, [url, model, file, doctype])
 
   useEffect(() => {
-    if (file && apiKey && url) handleSend()
+    if (file && url) handleSend()
   }, [file])
 
   useEffect(() => {
-    if (file && apiKey && url) handleSend()
-  }, [model])
+    if (file && url) handleSend()
+  }, [model, doctype])
 
   const handleFile = (f?: File) => {
     if (!f) return
@@ -104,33 +98,118 @@ export default function Home() {
   }
 
   return (
-    <main className='h-screen flex flex-col bg-[#1b1b1b] text-gray-200 font-mono'>
-      <header className='border-b border-gray-700 bg-[#242424] p-3'>
-        <div className='flex items-center gap-3 mb-2'>
-          <select
-            className='w-24 px-2 py-1 rounded font-bold text-sm border border-gray-700 bg-[#1b1b1b] focus:outline-none text-amber-400'
-            value={model}
-            onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
-          >
-            <option value='claude'>Claude</option>
-            <option value='gpt5'>GPT-5</option>
-          </select>
+    <main className='h-screen flex flex-col bg-[#0f0f0f] text-gray-100'>
+      <header className='bg-[#1a1a1a] border-b border-[#2a2a2a] shadow-lg'>
+        <div className='flex items-center gap-2 px-4 py-2'>
+          <div className='flex gap-1.5'>
+            <div className='w-3 h-3 rounded-full bg-[#ff5f57]'></div>
+            <div className='w-3 h-3 rounded-full bg-[#febc2e]'></div>
+            <div className='w-3 h-3 rounded-full bg-[#28c840]'></div>
+          </div>
 
-          <input
-            className='flex-1 bg-[#1b1b1b] border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none'
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-          />
-
-          <button
-            className='bg-amber-500 hover:bg-amber-400 px-4 py-1 rounded text-sm font-bold text-black flex items-center justify-center'
-            onClick={handleSend}
-            disabled={loading}
-          >
-            <svg className='w-4 h-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+          <div className='flex-1 flex items-center gap-2 ml-4'>
+            <svg className='w-4 h-4 text-gray-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
             </svg>
-          </button>
+            <input
+              className='flex-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition'
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              placeholder='https://...'
+            />
+            <button
+              className='bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 px-5 py-2 rounded-lg text-sm font-semibold text-black transition shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed'
+              onClick={handleSend}
+              disabled={loading}
+            >
+              {loading ? 'Procesando...' : 'Enviar'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <section className='flex flex-1 overflow-hidden'>
+        <aside className='w-96 bg-[#151515] border-r border-[#2a2a2a] flex flex-col'>
+          <div className='p-6 space-y-5'>
+            <div className='text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-6'>
+              Configuración
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-300 mb-2'>
+                Seleccione IA
+              </label>
+              <select
+                className='w-full px-4 py-2.5 rounded-lg font-medium text-sm border-2 border-[#3a3a3a] bg-[#1a1a1a] focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition text-yellow-400 cursor-pointer'
+                value={model}
+                onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
+              >
+                <option value='claude'>🤖 Claude</option>
+                <option value='gpt5'>✨ GPT-5</option>
+              </select>
+            </div>
+
+            <div>
+              <label className='block text-sm font-medium text-gray-300 mb-2'>
+                Tipo Documento
+              </label>
+              <select
+                className='w-full px-4 py-2.5 rounded-lg text-sm border-2 border-[#3a3a3a] bg-[#1a1a1a] focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition cursor-pointer text-gray-300'
+                value={doctype}
+                onChange={e => setDoctype(e.target.value)}
+              >
+                <option value=''>🔍 Auto-detectar</option>
+                {doctypes.map(d => <option key={d.doctypeid} value={d.label}>📄 {d.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className='flex-1 p-6 pt-0'>
+            <div
+              onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
+              onDragOver={e => e.preventDefault()}
+              onClick={() => document.getElementById('fileInput')?.click()}
+              className='h-full border-2 border-dashed border-[#3a3a3a] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-[#1a1a1a] transition-all group overflow-hidden'
+            >
+              {file ? (
+                preview && file.type === 'application/pdf' ? (
+                  <iframe
+                    src={preview}
+                    className='w-48 h-64 border-2 border-yellow-500 rounded-lg mb-3 pointer-events-none bg-white shadow-lg'
+                  />
+                ) : preview ? (
+                  <img
+                    src={preview}
+                    alt={file.name}
+                    className='max-w-full max-h-48 object-contain mb-3 rounded-lg border-2 border-yellow-500 shadow-lg'
+                  />
+                ) : (
+                  <svg className='w-20 h-20 text-red-400 mb-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' />
+                  </svg>
+                )
+              ) : (
+                <>
+                  <svg className='w-16 h-16 text-yellow-500 mb-4 group-hover:scale-110 transition-transform' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                    <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
+                  </svg>
+                  <p className='text-gray-400 text-center px-4 group-hover:text-yellow-500 transition'>
+                    Arrastra un archivo aquí o haz clic para seleccionar
+                  </p>
+                </>
+              )}
+              {file && (
+                <div className='text-center px-4'>
+                  <p className='text-yellow-400 font-medium text-sm mb-1 truncate max-w-xs'>
+                    {file.name}
+                  </p>
+                  <p className='text-xs text-gray-500'>
+                    {formatSize(file.size)} • {formatDate(file.lastModified)}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
 
           <input
             id='fileInput'
@@ -139,77 +218,54 @@ export default function Home() {
             className='hidden'
             onChange={e => handleFile(e.target.files?.[0])}
           />
-        </div>
+        </aside>
 
-        <div className='flex items-center gap-3'>
-          <span className='w-24 px-2 py-1 text-xs text-gray-400'>Secret</span>
+        <div className='flex-1 flex flex-col bg-[#0a0a0a] overflow-hidden'>
+          {error && (
+            <div className='mx-6 mt-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm'>
+              ⚠️ {error}
+            </div>
+          )}
 
-          <input
-            type='password'
-            className='flex-1 bg-[#1b1b1b] border border-gray-700 rounded px-3 py-1 text-sm focus:outline-none'
-            placeholder='API Key'
-            value={apiKey}
-            onChange={e => handleApiKeyChange(e.target.value)}
-          />
-        </div>
-      </header>
-
-      <section className='flex flex-1 overflow-hidden'>
-        <div
-          onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
-          onDragOver={e => e.preventDefault()}
-          onClick={() => document.getElementById('fileInput')?.click()}
-          className='flex border-r border-gray-700 bg-[#202020] hover:bg-[#272727] flex-col cursor-pointer transition pt-6'
-          style={{ width: '420px', minWidth: '380px' }}
-        >
-          <div className='border-2 border-dashed border-gray-600 rounded-lg w-80 h-64 mx-auto flex flex-col items-center justify-center text-center text-gray-400 hover:border-amber-400 transition p-4 overflow-hidden'>
-            {file ? (
-              preview && file.type === 'application/pdf' ? (
-                <iframe
-                  src={preview}
-                  className='w-40 h-52 border rounded mb-2 pointer-events-none bg-white'
-                />
-              ) : preview ? (
-                <img
-                  src={preview}
-                  alt={file.name}
-                  className='max-w-full max-h-40 object-contain mb-2 rounded'
-                />
-              ) : (
-                <svg className='w-16 h-16 text-red-400 mb-2' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' />
-                </svg>
-              )
-            ) : (
-              <span>Arrastra o haz clic para subir un archivo</span>
-            )}
-            {file && (
-              <>
-                <span className='text-amber-400 text-sm truncate'>{file.name}</span>
-                <span className='text-xs text-gray-500 mt-1'>
-                  {formatSize(file.size)} • {formatDate(file.lastModified)}
-                </span>
-              </>
-            )}
-          </div>
-        </div>
-
-        <div className='flex-1 flex flex-col bg-[#151515] p-6 overflow-hidden'>
-          {error && <p className='text-red-400 text-sm mb-4'>{error}</p>}
           {loading ? (
-            <div className='flex flex-col items-center justify-center flex-1 text-amber-400'>
-              <p className='font-semibold mb-1'>Esperando respuesta…</p>
-              <p className='text-sm'>{elapsed}s</p>
+            <div className='flex-1 flex flex-col items-center justify-center'>
+              <div className='relative'>
+                <div className='w-16 h-16 border-4 border-yellow-500/20 border-t-yellow-500 rounded-full animate-spin'></div>
+              </div>
+              <p className='text-yellow-500 font-semibold mt-6 text-lg'>
+                Procesando documento...
+              </p>
+              <p className='text-gray-500 text-sm mt-2'>
+                {elapsed}s transcurridos
+              </p>
             </div>
           ) : json ? (
-            <pre className='text-amber-300 text-xs whitespace-pre-wrap break-all overflow-auto flex-1 p-4 bg-[#0d0d0d] rounded border border-gray-800'>
-              {JSON.stringify(json, null, 2)}
-            </pre>
+            <div className='flex-1 overflow-auto p-6'>
+              <div className='bg-[#151515] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl'>
+                <div className='bg-[#1a1a1a] border-b border-[#2a2a2a] px-4 py-3 flex items-center gap-2'>
+                  <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
+                  <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>
+                    Resultado JSON
+                  </span>
+                </div>
+                <pre className='text-yellow-400 text-sm font-mono p-6 whitespace-pre-wrap break-all overflow-auto'>
+                  {JSON.stringify(json, null, 2)}
+                </pre>
+              </div>
+            </div>
           ) : (
-            <div className='flex flex-col items-center justify-center flex-1 text-gray-500 text-sm'>
-              <p className='text-amber-400 mb-2 font-semibold'>Listo para procesar</p>
-              <p>Sube un PDF o imagen y presiona <strong>Enviar</strong>.</p>
-              <p className='mt-1 text-xs text-gray-600'>El resultado JSON aparecerá aquí.</p>
+            <div className='flex-1 flex flex-col items-center justify-center text-center px-6'>
+              <div className='w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6'>
+                <svg className='w-10 h-10 text-yellow-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
+                </svg>
+              </div>
+              <h3 className='text-xl font-bold text-gray-200 mb-2'>
+                Listo para procesar
+              </h3>
+              <p className='text-gray-500 max-w-md'>
+                Sube un PDF o imagen en el panel izquierdo. El resultado JSON aparecerá aquí automáticamente.
+              </p>
             </div>
           )}
         </div>

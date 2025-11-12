@@ -25,10 +25,9 @@ const createPool = () => {
   return pool
 }
 
-const pool =
-  process.env.NODE_ENV === 'development'
-    ? ((globalThis as any).pgPool ??= createPool())
-    : createPool()
+const pool = isDev
+  ? ((globalThis as any).pgPool ??= createPool())
+  : createPool()
 
 export async function execute<T = any>(
   procedure: string,
