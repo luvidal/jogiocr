@@ -73,7 +73,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { schemas, map } = await loadSchemas()
     const base64 = fsSync.readFileSync(file.filepath).toString('base64')
-    console.log(schemas)
     const prompt = `Extract data from this Chilean document as JSON.
 
 Known schemas:
