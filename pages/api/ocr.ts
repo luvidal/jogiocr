@@ -4,7 +4,7 @@ import fsSync from 'fs'
 import fs from 'fs/promises'
 import Anthropic from '@anthropic-ai/sdk'
 import OpenAI from 'openai'
-import { execute } from './helpers'
+import { execute } from '@/utils/helpers'
 
 export const config = { api: { bodyParser: false } }
 
