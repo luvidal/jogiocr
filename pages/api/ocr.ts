@@ -12,7 +12,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const [fields, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
     const model = (Array.isArray(fields.model) ? fields.model[0] : fields.model || 'claude') as 'claude' | 'gpt5'
-    const doctype = Array.isArray(fields.doctype) ? fields.doctype[0] : fields.doctype
+    const doctypeRaw = Array.isArray(fields.doctype) ? fields.doctype[0] : fields.doctype
+    const doctype = typeof doctypeRaw === 'string' ? (doctypeRaw as any) : undefined
     const file = Array.isArray(files.file) ? files.file[0] : files.file
 
     if (!file?.filepath || !file?.mimetype)
