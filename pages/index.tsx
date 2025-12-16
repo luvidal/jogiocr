@@ -1,24 +1,18 @@
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
+import DataViewer from '@/components/DataViewer'
+
+const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false })
 
 export default function Home() {
   const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
-  const [doctype, setDoctype] = useState<string>('')
-  const [doctypes, setDoctypes] = useState<Array<{ doctypeid: string, label: string }>>([])
-  const [url, setUrl] = useState('')
   const [json, setJson] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
-
-  useEffect(() => {
-    setUrl(`${window.location.origin}/api/ocr`)
-    fetch('/api/v1/doctypes/listall')
-      .then(r => r.json())
-      .then(setDoctypes)
-      .catch(console.error)
-  }, [])
+  const [imageScale, setImageScale] = useState(1)
 
   useEffect(() => {
     if (!loading) return
@@ -32,10 +26,6 @@ export default function Home() {
       alert('Falta: Archivo')
       return
     }
-    if (!url) {
-      alert('Falta: URL')
-      return
-    }
 
     setLoading(true)
     setError(null)
@@ -44,9 +34,8 @@ export default function Home() {
       const form = new FormData()
       form.append('file', file)
       form.append('model', model)
-      if (doctype) form.append('doctype', doctype)
 
-      const res = await fetch(url, {
+      const res = await fetch('/api/ocr', {
         method: 'POST',
         body: form
       })
@@ -58,20 +47,21 @@ export default function Home() {
     } finally {
       setLoading(false)
     }
-  }, [url, model, file, doctype])
+  }, [model, file])
 
   useEffect(() => {
-    if (file && url) handleSend()
+    if (file) handleSend()
   }, [file])
 
   useEffect(() => {
-    if (file && url) handleSend()
-  }, [model, doctype])
+    if (file) handleSend()
+  }, [model])
 
   const handleFile = (f?: File) => {
     if (!f) return
     if (preview) URL.revokeObjectURL(preview)
     setFile(f)
+    setImageScale(1)
     if (f.type.startsWith('image/')) {
       setPreview(URL.createObjectURL(f))
     } else if (f.type === 'application/pdf') {
@@ -92,97 +82,101 @@ export default function Home() {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   }
 
+  const statusColor = loading ? 'bg-yellow-500' : error ? 'bg-red-500' : json ? 'bg-green-500' : 'bg-gray-600'
+
   const formatDate = (timestamp: number) => {
     const d = new Date(timestamp)
     return d.toLocaleDateString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric' })
   }
 
   return (
-    <main className='h-screen flex flex-col bg-[#0f0f0f] text-gray-100'>
-      <header className='bg-[#1a1a1a] border-b border-[#2a2a2a] shadow-lg'>
-        <div className='flex items-center gap-2 px-4 py-2'>
-          <div className='flex gap-1.5'>
-            <div className='w-3 h-3 rounded-full bg-[#ff5f57]'></div>
-            <div className='w-3 h-3 rounded-full bg-[#febc2e]'></div>
-            <div className='w-3 h-3 rounded-full bg-[#28c840]'></div>
-          </div>
-
-          <div className='flex-1 flex items-center gap-2 ml-4'>
-            <svg className='w-4 h-4 text-gray-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z' />
-            </svg>
-            <input
-              className='flex-1 bg-[#2a2a2a] border border-[#3a3a3a] rounded-lg px-4 py-2 text-sm focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition'
-              value={url}
-              onChange={e => setUrl(e.target.value)}
-              placeholder='https://...'
-            />
-            <button
-              className='bg-yellow-500 hover:bg-yellow-400 active:bg-yellow-600 px-5 py-2 rounded-lg text-sm font-semibold text-black transition shadow-lg shadow-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed'
-              onClick={handleSend}
-              disabled={loading}
-            >
-              {loading ? 'Procesando...' : 'Enviar'}
-            </button>
-          </div>
+    <main className='h-screen flex flex-col bg-[#0a0a0a] text-gray-100'>
+      <div className='pointer-events-none fixed inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(234,179,8,0.10),transparent_55%),radial-gradient(700px_circle_at_80%_20%,rgba(59,130,246,0.08),transparent_55%)]' />
+      <header className='relative bg-[#0a0a0a]/70 backdrop-blur border-b border-[#1f1f1f]'>
+        <div className='flex items-center justify-between px-4 py-3'>
+          <h1 className='text-sm font-semibold text-gray-200 tracking-wide'>OCR</h1>
         </div>
       </header>
 
       <section className='flex flex-1 overflow-hidden'>
-        <aside className='w-96 bg-[#151515] border-r border-[#2a2a2a] flex flex-col'>
-          <div className='p-6 space-y-5'>
-            <div className='text-xs font-semibold text-yellow-500 uppercase tracking-wider mb-6'>
-              Configuración
-            </div>
+        <aside className='relative flex-1 basis-1/2 min-w-0 bg-[#0a0a0a] border-r border-[#1f1f1f] flex flex-col'>
+          <div className='p-6 border-b border-[#1f1f1f]'>
+            <div className='flex items-center gap-3'>
+              <div className='min-w-0 flex-1'>
+                <div className='flex items-center justify-between gap-3'>
+                  <div className='min-w-0'>
+                    <div className='text-xs text-gray-500'>Input</div>
+                    <div className='mt-0.5 text-sm font-semibold text-gray-100 truncate'>
+                      {file ? file.name : 'Drop a file'}
+                    </div>
+                  </div>
+                  <div className='flex items-center gap-2 text-xs text-gray-400 shrink-0'>
+                    <span className={`inline-block w-2 h-2 rounded-full ${file ? 'bg-green-500' : 'bg-gray-600'}`}></span>
+                    <span>{file ? 'Ready' : 'Waiting'}</span>
+                  </div>
+                </div>
+              </div>
 
-            <div>
-              <label className='block text-sm font-medium text-gray-300 mb-2'>
-                Seleccione IA
-              </label>
               <select
-                className='w-full px-4 py-2.5 rounded-lg font-medium text-sm border-2 border-[#3a3a3a] bg-[#1a1a1a] focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition text-yellow-400 cursor-pointer'
+                className='px-3 py-2 rounded-lg font-medium text-sm border border-[#2a2a2a] bg-[#0c0c0c] focus:outline-none focus:border-yellow-500/60 focus:ring-2 focus:ring-yellow-500/10 transition text-gray-200 cursor-pointer'
                 value={model}
                 onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
               >
-                <option value='claude'>🤖 Claude</option>
-                <option value='gpt5'>✨ GPT-5</option>
-              </select>
-            </div>
-
-            <div>
-              <label className='block text-sm font-medium text-gray-300 mb-2'>
-                Tipo Documento
-              </label>
-              <select
-                className='w-full px-4 py-2.5 rounded-lg text-sm border-2 border-[#3a3a3a] bg-[#1a1a1a] focus:outline-none focus:border-yellow-500 focus:ring-2 focus:ring-yellow-500/20 transition cursor-pointer text-gray-300'
-                value={doctype}
-                onChange={e => setDoctype(e.target.value)}
-              >
-                <option value=''>🔍 Auto-detectar</option>
-                {doctypes.map(d => <option key={d.doctypeid} value={d.label}>📄 {d.label}</option>)}
+                <option value='claude'>Claude</option>
+                <option value='gpt5'>GPT-5</option>
               </select>
             </div>
           </div>
 
-          <div className='flex-1 p-6 pt-0'>
+          <div className='flex-1 p-6 pt-4 overflow-auto'>
             <div
               onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
               onDragOver={e => e.preventDefault()}
-              onClick={() => document.getElementById('fileInput')?.click()}
-              className='h-full border-2 border-dashed border-[#3a3a3a] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500 hover:bg-[#1a1a1a] transition-all group overflow-hidden'
+              className='h-full border border-dashed border-[#2a2a2a] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500/60 hover:bg-white/5 transition-all duration-300 group overflow-hidden'
             >
               {file ? (
                 preview && file.type === 'application/pdf' ? (
-                  <iframe
-                    src={preview}
-                    className='w-48 h-64 border-2 border-yellow-500 rounded-lg mb-3 pointer-events-none bg-white shadow-lg'
-                  />
+                  <PDFViewer fileUrl={preview} />
                 ) : preview ? (
-                  <img
-                    src={preview}
-                    alt={file.name}
-                    className='max-w-full max-h-48 object-contain mb-3 rounded-lg border-2 border-yellow-500 shadow-lg'
-                  />
+                  <div className='w-full h-[70vh] bg-[#0f0f0f] border border-[#1f1f1f] rounded-xl shadow-2xl flex flex-col overflow-hidden'>
+                    <div className='flex items-center gap-2 px-4 py-3 border-b border-[#1f1f1f] bg-[#0c0c0c]'>
+                      <div className='text-xs font-semibold text-gray-200'>Zoom</div>
+                      <div className='flex items-center gap-1 ml-auto'>
+                        <button
+                          type='button'
+                          onClick={() => setImageScale(s => Math.max(0.5, s - 0.1))}
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                        >
+                          −
+                        </button>
+                        <span className='text-xs text-gray-400 w-14 text-center tabular-nums'>
+                          {Math.round(imageScale * 100)}%
+                        </span>
+                        <button
+                          type='button'
+                          onClick={() => setImageScale(s => Math.min(3, s + 0.1))}
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                        >
+                          +
+                        </button>
+                        <button
+                          type='button'
+                          onClick={() => setImageScale(1)}
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
+                    <div className='flex-1 overflow-auto flex items-center justify-center bg-[#0a0a0a] p-4'>
+                      <img
+                        src={preview}
+                        alt={file.name}
+                        style={{ transform: `scale(${imageScale})` }}
+                        className='max-w-full max-h-full object-contain rounded-lg shadow-lg'
+                      />
+                    </div>
+                  </div>
                 ) : (
                   <svg className='w-20 h-20 text-red-400 mb-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z' />
@@ -220,7 +214,7 @@ export default function Home() {
           />
         </aside>
 
-        <div className='flex-1 flex flex-col bg-[#0a0a0a] overflow-hidden'>
+        <div className='relative flex-1 basis-1/2 min-w-0 flex flex-col bg-[#0a0a0a] overflow-hidden'>
           {error && (
             <div className='mx-6 mt-6 p-4 bg-red-500/10 border border-red-500/50 rounded-lg text-red-400 text-sm'>
               ⚠️ {error}
@@ -240,17 +234,25 @@ export default function Home() {
               </p>
             </div>
           ) : json ? (
-            <div className='flex-1 overflow-auto p-6'>
-              <div className='bg-[#151515] border border-[#2a2a2a] rounded-xl overflow-hidden shadow-2xl'>
-                <div className='bg-[#1a1a1a] border-b border-[#2a2a2a] px-4 py-3 flex items-center gap-2'>
-                  <div className='w-3 h-3 rounded-full bg-yellow-500'></div>
-                  <span className='text-xs font-semibold text-gray-400 uppercase tracking-wider'>
-                    Resultado JSON
-                  </span>
+            <div className='flex-1 p-6 overflow-hidden flex'>
+              <div className='flex-1 bg-[#0c0c0c] border border-[#1f1f1f] rounded-xl overflow-hidden shadow-2xl flex flex-col'>
+                <div className='px-4 py-3 border-b border-[#1f1f1f] bg-[#0c0c0c] flex items-center justify-between gap-3'>
+                  <div className='flex items-center gap-2 min-w-0'>
+                    <span className={`w-2.5 h-2.5 rounded-full ${statusColor}`}></span>
+                    <div className='min-w-0'>
+                      <div className='text-xs text-gray-500'>Output</div>
+                      <div className='text-sm font-semibold text-gray-100 truncate'>Result</div>
+                    </div>
+                  </div>
+                  {json?.doctypeid && (
+                    <span className='text-[11px] text-gray-400 bg-[#0a0a0a] px-2 py-1 rounded-md border border-[#1f1f1f] shrink-0'>
+                      {json.doctypeid}
+                    </span>
+                  )}
                 </div>
-                <pre className='text-yellow-400 text-sm font-mono p-6 whitespace-pre-wrap break-all overflow-auto'>
-                  {JSON.stringify(json, null, 2)}
-                </pre>
+                <div className='flex-1 p-6 overflow-auto'>
+                  <DataViewer data={json} />
+                </div>
               </div>
             </div>
           ) : (

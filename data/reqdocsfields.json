@@ -1,0 +1,132 @@
+{
+    "cedula-identidad": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "rut": "string",
+            "nombres": "string",
+            "apellidos": "string",
+            "nacionalidad": "string",
+            "sexo": "string",
+            "fecha_nacimiento": "date",
+            "numero_documento": "string",
+            "fecha_emision": "date",
+            "fecha_vencimiento": "date",
+            "lugar_nacimiento": "string",
+            "profesion": "string"
+        }
+    },
+    "certificado-nacimiento": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "folio": "string",
+            "codigo_verificacion": "string",
+            "circunscripcion": "string",
+            "numero_inscripcion": "string",
+            "año_registro": "string",
+            "nombre": "string",
+            "rut": "string",
+            "fecha_nacimiento": "date",
+            "hora_nacimiento": "string",
+            "sexo": "string",
+            "padre_nombre": "string",
+            "padre_rut": "string",
+            "madre_nombre": "string",
+            "madre_rut": "string",
+            "fecha_emision": "date"
+        }
+    },
+    "liquidacion-sueldo": {
+        "multiple": true,
+        "campo_clave": "periodo",
+        "docdate": "YYYY-MM",
+        "fields": {
+            "nombre": "string",
+            "rut": "string",
+            "docdate": "date",
+            "cargo": "string",
+            "fecha_ingreso": "date",
+            "base_imponible": "number",
+            "base_tributable": "number",
+            "liquido_a_pagar": "number"
+        }
+    },
+    "boletas-anual": {
+        "multiple": true,
+        "campo_clave": "año",
+        "docdate": "YYYY",
+        "fields": {
+            "rut": "string",
+            "contribuyente": "string",
+            "año": "number",
+            "honorario_bruto": "number",
+            "total_liquido": "number"
+        }
+    },
+    "formulario22": {
+        "multiple": false,
+        "docdate": "YYYY",
+        "fields": {
+            "rut": "string",
+            "nombres": "string",
+            "año_tributario": "number",
+            "numero_folio": "string"
+        }
+    },
+    "declaracion-aprobada": {
+        "multiple": false,
+        "docdate": "YYYY",
+        "fields": {
+            "rut": "string",
+            "folio": "number",
+            "año_tributario": "number",
+            "total_a_pagar": "number",
+            "devolucion_solicitada": "number"
+        }
+    },
+    "contrato-arriendo": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "arrendador": "string",
+            "arrendatario": "string",
+            "direccion": "string",
+            "monto_mensual": "number",
+            "fecha_inicio": "date",
+            "fecha_termino": "date"
+        }
+    },
+    "padron": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "patente": "string",
+            "marca": "string",
+            "modelo": "string",
+            "año": "number",
+            "rut_propietario": "string"
+        }
+    },
+    "avaluo-fiscal": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "rol": "string",
+            "direccion": "string",
+            "avaluo": "number"
+        }
+    },
+    "certificado-matrimonio": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "folio": "string",
+            "marido_nombre": "string",
+            "marido_rut": "string",
+            "mujer_nombre": "string",
+            "mujer_rut": "string",
+            "fecha_celebracion": "date"
+        }
+    }
+}
