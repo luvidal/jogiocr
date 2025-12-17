@@ -128,5 +128,102 @@
             "mujer_rut": "string",
             "fecha_celebracion": "date"
         }
+    },
+    "contrato-trabajo": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "empleador_nombre": "string",
+            "empleador_rut": "string",
+            "empleador_domicilio": "string",
+            "trabajador_nombre": "string",
+            "trabajador_rut": "string",
+            "trabajador_domicilio": "string",
+            "trabajador_nacionalidad": "string",
+            "fecha_nacimiento": "date",
+            "cargo": "string",
+            "funciones": "string",
+            "fecha_inicio": "date",
+            "duracion_contrato": "string",
+            "jornada_trabajo": "string",
+            "lugar_trabajo": "string",
+            "sueldo_base": "number",
+            "periodo_pago": "string",
+            "gratificacion": "string",
+            "fecha_firma": "date"
+        }
+    },
+    "cuenta-bancaria": {
+        "multiple": true,
+        "campo_clave": "fecha",
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "banco": "string",
+            "tipo_cuenta": "string",
+            "numero_cuenta": "string",
+            "titular_nombre": "string",
+            "titular_rut": "string",
+            "fecha_emision": "date",
+            "saldo_anterior": "number",
+            "saldo_final": "number",
+            "fecha": "date",
+            "descripcion": "string",
+            "total_cargos": "number",
+            "total_abonos": "number",
+            "saldo": "number"
+        }
+    },
+    "informe-comercial": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "periodo": "date",
+            "nombre": "string",
+            "rut": "string",
+            "fecha_nacimiento": "date",
+            "edad": "number",
+            "sexo": "string",
+            "estado_civil": "string",
+            "nacionalidad": "string",
+            "codigo_verificacion": "string",
+            "validacion_url": "string",
+            "riesgo_crediticio": "string",
+            "riesgo_crediticio_categoria": "string",
+            "morosidad_vigente": "string",
+            "numero_mora_financiera": "number",
+            "numero_mora_provisional_laboral": "number",
+            "direccion_particular": "string",
+            "fecha_informacion_direccion": "date",
+            "bancos_relacionados": "number",
+            "sociedades_relacionadas": "number",
+            "socios_relacionados": "number",
+            "consultas_al_rut": "number"
+        }
+    },
+    "cartola-postulacion-vivienda": {
+        "multiple": false,
+        "docdate": "YYYY-MM-DD",
+        "fields": {
+            "ministerio": "string",
+            "tipo_cartola": "string",
+            "sistema": "string",
+            "tramo": "string",
+            "tipo_adquisicion": "string",
+            "fecha_emision": "date",
+            "nombre_postulante": "string",
+            "fecha_nacimiento": "date",
+            "cedula_identidad": "string",
+            "estado_civil": "string",
+            "estado_resultado": "string",
+            "puntaje_propio": "number",
+            "puntaje_seleccion": "number",
+            "puntaje_corte": "number",
+            "region": "string",
+            "comuna": "string",
+            "numero_certificado_subsidio": "string",
+            "monto_ahorro": "number",
+            "fecha_inicio_vigencia": "date",
+            "fecha_termino_vigencia": "date"
+        }
     }
 }

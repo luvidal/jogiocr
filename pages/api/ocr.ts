@@ -25,6 +25,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     fs.unlinkSync(file.filepath)
     res.json(result)
   } catch (e) {
-    res.status(500).json({ error: e instanceof Error ? e.message : 'Processing failed' })
+    console.error('OCR API Error:', e)
+    const errorMsg = e instanceof Error ? e.message : 'Processing failed'
+    const errorStack = e instanceof Error ? e.stack : undefined
+    res.status(500).json({ error: errorMsg, stack: errorStack })
   }
 }
