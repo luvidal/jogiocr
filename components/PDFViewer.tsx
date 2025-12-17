@@ -78,7 +78,7 @@ const PDFViewer = ({ fileUrl }: Props) => {
           </div>
         )}
 
-        <div className='flex-1 overflow-auto bg-[#0a0a0a] flex items-center justify-center p-6'>
+        <div className='flex-1 overflow-auto bg-[#0a0a0a] flex items-start justify-center pt-6 px-6 pb-6'>
           <Document
             file={fileUrl}
             onLoadSuccess={({ numPages: np }) => setNumPages(np)}

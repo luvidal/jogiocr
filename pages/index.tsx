@@ -92,47 +92,34 @@ export default function Home() {
   return (
     <main className='h-screen flex flex-col bg-[#0a0a0a] text-gray-100'>
       <div className='pointer-events-none fixed inset-0 bg-[radial-gradient(900px_circle_at_20%_10%,rgba(234,179,8,0.10),transparent_55%),radial-gradient(700px_circle_at_80%_20%,rgba(59,130,246,0.08),transparent_55%)]' />
-      <header className='relative bg-[#0a0a0a]/70 backdrop-blur border-b border-[#1f1f1f]'>
-        <div className='flex items-center justify-between px-4 py-3'>
-          <h1 className='text-sm font-semibold text-gray-200 tracking-wide'>OCR</h1>
+      <header className='relative bg-[#0a0a0a] border-b border-yellow-500/20 backdrop-blur'>
+        <div className='flex items-center justify-between px-6 py-4'>
+          <h1 className='text-lg font-bold tracking-tight text-yellow-500'>OCR</h1>
         </div>
       </header>
 
       <section className='flex flex-1 overflow-hidden'>
         <aside className='relative flex-1 basis-1/2 min-w-0 bg-[#0a0a0a] border-r border-[#1f1f1f] flex flex-col'>
           <div className='p-6 border-b border-[#1f1f1f]'>
-            <div className='flex items-center gap-3'>
-              <div className='min-w-0 flex-1'>
-                <div className='flex items-center justify-between gap-3'>
-                  <div className='min-w-0'>
-                    <div className='text-xs text-gray-500'>Input</div>
-                    <div className='mt-0.5 text-sm font-semibold text-gray-100 truncate'>
-                      {file ? file.name : 'Drop a file'}
-                    </div>
-                  </div>
-                  <div className='flex items-center gap-2 text-xs text-gray-400 shrink-0'>
-                    <span className={`inline-block w-2 h-2 rounded-full ${file ? 'bg-green-500' : 'bg-gray-600'}`}></span>
-                    <span>{file ? 'Ready' : 'Waiting'}</span>
-                  </div>
+            <div className='flex items-center justify-between gap-3'>
+              <div className='min-w-0'>
+                <div className='text-xs font-medium text-gray-500 uppercase tracking-wider'>Input</div>
+                <div className='mt-1 text-sm font-semibold text-gray-100 truncate'>
+                  {file ? file.name : 'No file selected'}
                 </div>
               </div>
-
-              <select
-                className='px-3 py-2 rounded-lg font-medium text-sm border border-[#2a2a2a] bg-[#0c0c0c] focus:outline-none focus:border-yellow-500/60 focus:ring-2 focus:ring-yellow-500/10 transition text-gray-200 cursor-pointer'
-                value={model}
-                onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
-              >
-                <option value='claude'>Claude</option>
-                <option value='gpt5'>GPT-5</option>
-              </select>
+              <div className='flex items-center gap-2 text-xs font-medium text-gray-400 shrink-0'>
+                <span className={`inline-block w-2 h-2 rounded-full ${file ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]' : 'bg-gray-600'}`}></span>
+                <span>{file ? 'Ready' : 'Waiting'}</span>
+              </div>
             </div>
           </div>
 
-          <div className='flex-1 p-6 pt-4 overflow-auto'>
+          <div className='flex-1 p-6 pt-4 overflow-auto flex flex-col gap-4'>
             <div
               onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
               onDragOver={e => e.preventDefault()}
-              className='h-full border border-dashed border-[#2a2a2a] rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500/60 hover:bg-white/5 transition-all duration-300 group overflow-hidden'
+              className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
             >
               {file ? (
                 preview && file.type === 'application/pdf' ? (
@@ -145,24 +132,24 @@ export default function Home() {
                         <button
                           type='button'
                           onClick={() => setImageScale(s => Math.max(0.5, s - 0.1))}
-                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-yellow-500/30 hover:border-yellow-500/70 hover:bg-yellow-500/5 transition'
                         >
                           −
                         </button>
-                        <span className='text-xs text-gray-400 w-14 text-center tabular-nums'>
+                        <span className='text-xs text-yellow-500/70 w-14 text-center tabular-nums font-medium'>
                           {Math.round(imageScale * 100)}%
                         </span>
                         <button
                           type='button'
                           onClick={() => setImageScale(s => Math.min(3, s + 0.1))}
-                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-yellow-500/30 hover:border-yellow-500/70 hover:bg-yellow-500/5 transition'
                         >
                           +
                         </button>
                         <button
                           type='button'
                           onClick={() => setImageScale(1)}
-                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-gray-200 border border-[#2a2a2a] hover:border-yellow-500/60 hover:bg-white/5 transition'
+                          className='px-2.5 py-1.5 text-xs font-semibold rounded-md bg-[#0a0a0a] text-yellow-500 border border-yellow-500/40 hover:border-yellow-500/70 hover:bg-yellow-500/5 transition'
                         >
                           Reset
                         </button>
@@ -194,7 +181,7 @@ export default function Home() {
               )}
               {file && (
                 <div className='text-center px-4'>
-                  <p className='text-yellow-400 font-medium text-sm mb-1 truncate max-w-xs'>
+                  <p className='text-yellow-500 font-semibold text-sm mb-1 truncate max-w-xs'>
                     {file.name}
                   </p>
                   <p className='text-xs text-gray-500'>
@@ -203,6 +190,15 @@ export default function Home() {
                 </div>
               )}
             </div>
+
+            <select
+              className='w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 text-yellow-500 cursor-pointer hover:border-yellow-500/50 focus:outline-none focus:border-yellow-500/60 focus:ring-4 focus:ring-yellow-500/10 transition-all'
+              value={model}
+              onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
+            >
+              <option value='claude' className='bg-[#0a0a0a] text-gray-200'>Claude Haiku 4.5</option>
+              <option value='gpt5' className='bg-[#0a0a0a] text-gray-200'>GPT-4o</option>
+            </select>
           </div>
 
           <input
@@ -235,8 +231,8 @@ export default function Home() {
             </div>
           ) : json ? (
             <div className='flex-1 p-6 overflow-hidden flex'>
-              <div className='flex-1 bg-[#0c0c0c] border border-[#1f1f1f] rounded-xl overflow-hidden shadow-2xl flex flex-col'>
-                <div className='px-4 py-3 border-b border-[#1f1f1f] bg-[#0c0c0c] flex items-center justify-between gap-3'>
+              <div className='flex-1 bg-[#0c0c0c] border border-yellow-500/25 rounded-xl overflow-hidden shadow-2xl flex flex-col'>
+                <div className='px-4 py-3 border-b border-yellow-500/20 bg-[#0c0c0c] flex items-center justify-between gap-3'>
                   <div className='flex items-center gap-2 min-w-0'>
                     <span className={`w-2.5 h-2.5 rounded-full ${statusColor}`}></span>
                     <div className='min-w-0'>
@@ -244,9 +240,9 @@ export default function Home() {
                       <div className='text-sm font-semibold text-gray-100 truncate'>Result</div>
                     </div>
                   </div>
-                  {json?.doctypeid && (
-                    <span className='text-[11px] text-gray-400 bg-[#0a0a0a] px-2 py-1 rounded-md border border-[#1f1f1f] shrink-0'>
-                      {json.doctypeid}
+                  {json?.documents && json.documents.length > 0 && (
+                    <span className='text-[11px] text-yellow-500 bg-[#0a0a0a] px-2 py-1 rounded-md border border-yellow-500/30 shrink-0 font-semibold'>
+                      {json.documents.length} documento{json.documents.length > 1 ? 's' : ''}
                     </span>
                   )}
                 </div>
@@ -257,7 +253,7 @@ export default function Home() {
             </div>
           ) : (
             <div className='flex-1 flex flex-col items-center justify-center text-center px-6'>
-              <div className='w-20 h-20 bg-yellow-500/10 rounded-full flex items-center justify-center mb-6'>
+              <div className='w-20 h-20 bg-yellow-500/15 rounded-full flex items-center justify-center mb-6 border border-yellow-500/30'>
                 <svg className='w-10 h-10 text-yellow-500' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
                   <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' />
                 </svg>

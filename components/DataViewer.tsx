@@ -87,15 +87,131 @@ const TableView = ({ data }: { data: unknown }) => {
 
 const DataViewer = ({ data }: Props) => {
   const [mode, setMode] = useState<ViewerMode>('table')
-  const [active, setActive] = useState(0)
+  const [activeDoc, setActiveDoc] = useState(0)
+  const [activePeriod, setActivePeriod] = useState(0)
 
   if (!data) return <div className='text-sm text-gray-500'>No data</div>
 
   const dataObj = data as Record<string, any>
+
+  // Check if this is the new multi-document format
+  const isMultiDocFormat = 'documents' in dataObj && Array.isArray(dataObj.documents)
+
+  if (isMultiDocFormat) {
+    const documents = dataObj.documents as Array<{
+      doctypeid: string
+      matched: boolean
+      multiple: boolean
+      periodo: string | null
+      data: Record<string, any> | Record<string, any>[]
+    }>
+
+    if (documents.length === 0) {
+      return <div className='text-sm text-gray-500'>No documents found</div>
+    }
+
+    const currentDoc = documents[activeDoc]
+    const entries = Array.isArray(currentDoc.data) ? currentDoc.data : [currentDoc.data]
+    const hasMultiplePeriods = currentDoc.multiple && entries.length > 1
+    const currentData = hasMultiplePeriods ? entries[activePeriod] : entries[0]
+    const titlePeriod = currentDoc.periodo || currentData?.periodo
+
+    return (
+      <div className='space-y-3'>
+        {/* Document type tabs */}
+        {documents.length > 1 && (
+          <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c] flex-wrap'>
+            {documents.map((doc, idx) => {
+              const activeTab = idx === activeDoc
+              return (
+                <button
+                  key={idx}
+                  type='button'
+                  onClick={() => {
+                    setActiveDoc(idx)
+                    setActivePeriod(0)
+                  }}
+                  className={`px-4 py-2 text-xs font-semibold transition-colors ${activeTab ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
+                >
+                  {doc.doctypeid}
+                </button>
+              )
+            })}
+          </div>
+        )}
+
+        <div className='flex items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <div className='flex items-center gap-2 min-w-0'>
+              <div className='text-sm font-semibold text-gray-100 truncate'>
+                {currentDoc.doctypeid}
+              </div>
+              {titlePeriod ? <div className='text-xs text-gray-500 font-medium truncate'>• {titlePeriod}</div> : null}
+            </div>
+            <div className='mt-1 flex flex-wrap gap-1.5'>
+              <Badge color={currentDoc.matched ? 'green' : 'red'}>
+                {currentDoc.matched ? 'OK' : 'Revisar'}
+              </Badge>
+              {currentDoc.multiple && <Badge color='yellow'>Multi</Badge>}
+              {entries.length > 0 && <Badge color='green'>{entries.length}</Badge>}
+            </div>
+          </div>
+
+          <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden h-9 bg-[#0c0c0c]'>
+            <button
+              className={`px-4 text-xs font-semibold transition-colors ${mode === 'table' ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
+              onClick={() => setMode('table')}
+              type='button'
+            >
+              Table
+            </button>
+            <button
+              className={`px-4 text-xs font-semibold transition-colors ${mode === 'json' ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
+              onClick={() => setMode('json')}
+              type='button'
+            >
+              JSON
+            </button>
+          </div>
+        </div>
+
+        {mode === 'json' ? (
+          <pre className='bg-[#0c0c0c] border border-[#1f1f1f] rounded-xl text-gray-200 text-xs font-mono p-5 whitespace-pre-wrap break-all overflow-auto shadow-2xl'>
+            {JSON.stringify(currentDoc, null, 2)}
+          </pre>
+        ) : (
+          <div className='space-y-2'>
+            {hasMultiplePeriods && (
+              <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c] flex-wrap'>
+                {entries.map((item, idx) => {
+                  const label = item?.periodo || `Registro ${idx + 1}`
+                  const activeTab = idx === activePeriod
+                  return (
+                    <button
+                      key={idx}
+                      type='button'
+                      onClick={() => setActivePeriod(idx)}
+                      className={`px-4 py-2 text-xs font-semibold transition-colors ${activeTab ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            <TableView data={currentData} />
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Legacy format support (old single-document format)
   const isDocEnvelope = typeof data === 'object' && ('doctypeid' in data || 'matched' in data || 'data' in data)
   const entries = Array.isArray(dataObj.data) ? dataObj.data : dataObj.data ? [dataObj.data] : []
   const hasMultiple = Boolean(dataObj.multiple && entries.length > 0)
-  const current = hasMultiple ? entries[Math.min(active, entries.length - 1)] : entries[0] || data
+  const current = hasMultiple ? entries[Math.min(activePeriod, entries.length - 1)] : entries[0] || data
   const titlePeriod = dataObj.periodo || current?.periodo
 
   return (
@@ -144,16 +260,16 @@ const DataViewer = ({ data }: Props) => {
       ) : (
         <div className='space-y-2'>
           {hasMultiple && (
-            <div className='flex flex-wrap gap-2'>
+            <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c] flex-wrap'>
               {entries.map((item, idx) => {
                 const label = item?.periodo || `Registro ${idx + 1}`
-                const activeTab = idx === active
+                const activeTab = idx === activePeriod
                 return (
                   <button
                     key={idx}
                     type='button'
-                    onClick={() => setActive(idx)}
-                    className={`px-5 py-2.5 rounded-lg text-xs font-extrabold border-2 transition-all duration-300 ${activeTab ? 'bg-gradient-to-br from-yellow-400 via-yellow-500 to-yellow-600 text-black border-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.5)] scale-110' : 'bg-[#0c0c0c]/70 backdrop-blur-xl text-gray-300 border-yellow-500/30 hover:border-yellow-400/60 hover:bg-yellow-500/15 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]'}`}
+                    onClick={() => setActivePeriod(idx)}
+                    className={`px-4 py-2 text-xs font-semibold transition-colors ${activeTab ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
                   >
                     {label}
                   </button>
