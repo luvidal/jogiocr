@@ -37,7 +37,7 @@
             "fecha_emision": "date"
         }
     },
-    "liquidacion-sueldo": {
+    "contrato-arriendo": {
         "multiple": true,
         "campo_clave": "periodo",
         "docdate": "YYYY-MM",
@@ -52,7 +52,7 @@
             "liquido_a_pagar": "number"
         }
     },
-    "boletas-anual": {
+    "liquidacion-sueldo": {
         "multiple": true,
         "campo_clave": "año",
         "docdate": "YYYY",
@@ -64,7 +64,7 @@
             "total_liquido": "number"
         }
     },
-    "formulario22": {
+    "padron": {
         "multiple": false,
         "docdate": "YYYY",
         "fields": {
@@ -74,7 +74,7 @@
             "numero_folio": "string"
         }
     },
-    "declaracion-aprobada": {
+    "avaluo-fiscal": {
         "multiple": false,
         "docdate": "YYYY",
         "fields": {
@@ -85,7 +85,7 @@
             "devolucion_solicitada": "number"
         }
     },
-    "contrato-arriendo": {
+    "boletas-anual": {
         "multiple": false,
         "docdate": "YYYY-MM-DD",
         "fields": {
@@ -97,7 +97,7 @@
             "fecha_termino": "date"
         }
     },
-    "padron": {
+    "formulario22": {
         "multiple": false,
         "docdate": "YYYY-MM-DD",
         "fields": {
@@ -105,10 +105,11 @@
             "marca": "string",
             "modelo": "string",
             "año": "number",
-            "rut_propietario": "string"
+            "rut_propietario": "string",
+            "valor_estimado_clp": "number"
         }
     },
-    "avaluo-fiscal": {
+    "declaracion-aprobada": {
         "multiple": false,
         "docdate": "YYYY-MM-DD",
         "fields": {

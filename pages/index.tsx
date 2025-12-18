@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import DataViewer from '@/components/DataViewer'
+import Modal from '@/components/Modal'
 
 const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false })
 
 export default function Home() {
   const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
   const [json, setJson] = useState<any>(null)
+  const [megaJson, setMegaJson] = useState<any>(null)
+  const [showMegaModal, setShowMegaModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -35,7 +38,7 @@ export default function Home() {
       form.append('file', file)
       form.append('model', model)
 
-      const res = await fetch('/api/ocr', {
+      const res = await fetch('/api/v1/ocr', {
         method: 'POST',
         body: form
       })
@@ -56,6 +59,24 @@ export default function Home() {
   useEffect(() => {
     if (file) handleSend()
   }, [model])
+
+  const handleMegaJson = async () => {
+    if (!json) return
+    try {
+      const res = await fetch('/api/v1/megajson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(json)
+      })
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      setMegaJson(data)
+      setShowMegaModal(true)
+    } catch (e) {
+      console.error(e)
+      alert('Error generating Mega JSON')
+    }
+  }
 
   const handleFile = (f?: File) => {
     if (!f) return
@@ -175,7 +196,7 @@ export default function Home() {
                     <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12' />
                   </svg>
                   <p className='text-gray-400 text-center px-4 group-hover:text-yellow-500 transition'>
-                    Arrastra un archivo aquí o haz clic para seleccionar
+                    Arrastra un archivo aquí
                   </p>
                 </>
               )}
@@ -230,7 +251,7 @@ export default function Home() {
               </p>
             </div>
           ) : json ? (
-            <div className='flex-1 p-6 overflow-hidden flex'>
+            <div className='flex-1 p-6 overflow-hidden flex flex-col gap-4'>
               <div className='flex-1 bg-[#0c0c0c] border border-yellow-500/25 rounded-xl overflow-hidden shadow-2xl flex flex-col'>
                 <div className='px-4 py-3 border-b border-yellow-500/20 bg-[#0c0c0c] flex items-center justify-between gap-3'>
                   <div className='flex items-center gap-2 min-w-0'>
@@ -247,9 +268,15 @@ export default function Home() {
                   )}
                 </div>
                 <div className='flex-1 p-6 overflow-auto'>
-                  <DataViewer data={json} />
+                  <DataViewer data={json} simpleMode={true} />
                 </div>
               </div>
+              <button
+                onClick={handleMegaJson}
+                className='w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 text-yellow-500 cursor-pointer hover:border-yellow-500/50 hover:bg-yellow-500/10 transition-all'
+              >
+                Report
+              </button>
             </div>
           ) : (
             <div className='flex-1 flex flex-col items-center justify-center text-center px-6'>
@@ -262,12 +289,20 @@ export default function Home() {
                 Listo para procesar
               </h3>
               <p className='text-gray-500 max-w-md'>
-                Sube un PDF o imagen en el panel izquierdo. El resultado JSON aparecerá aquí automáticamente.
+                Sube un PDF o imagen en el panel izquierdo.
               </p>
             </div>
           )}
         </div>
       </section>
+
+      <Modal
+        isOpen={showMegaModal}
+        onClose={() => setShowMegaModal(false)}
+        title='Reporte IA'
+      >
+        <DataViewer data={megaJson} simpleMode={false} />
+      </Modal>
     </main>
   )
 }
