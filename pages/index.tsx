@@ -2,10 +2,12 @@ import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import DataViewer from '@/components/DataViewer'
 import Modal from '@/components/Modal'
+import LoginModal from '@/components/LoginModal'
 
 const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false })
 
 export default function Home() {
+  const [isAuth, setIsAuth] = useState(false)
   const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
   const [json, setJson] = useState<any>(null)
   const [megaJson, setMegaJson] = useState<any>(null)
@@ -303,6 +305,8 @@ export default function Home() {
       >
         <DataViewer data={megaJson} simpleMode={false} />
       </Modal>
+
+      <LoginModal isOpen={!isAuth} onSuccess={() => setIsAuth(true)} />
     </main>
   )
 }
