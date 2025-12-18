@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type Props = {
     isOpen: boolean
@@ -6,9 +6,12 @@ type Props = {
 }
 
 export default function LoginModal({ isOpen, onSuccess }: Props) {
+    const [mounted, setMounted] = useState(false)
     const [username, setUsername] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
+
+    useEffect(() => setMounted(true), [])
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -20,7 +23,7 @@ export default function LoginModal({ isOpen, onSuccess }: Props) {
         }
     }
 
-    if (!isOpen) return null
+    if (!mounted || !isOpen) return null
 
     return (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md'>

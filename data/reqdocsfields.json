@@ -86,15 +86,15 @@
         }
     },
     "boletas-anual": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+        "multiple": true,
+        "campo_clave": "año",
+        "docdate": "YYYY",
         "fields": {
-            "arrendador": "string",
-            "arrendatario": "string",
-            "direccion": "string",
-            "monto_mensual": "number",
-            "fecha_inicio": "date",
-            "fecha_termino": "date"
+            "rut": "string",
+            "contribuyente": "string",
+            "año": "number",
+            "honorario_bruto": "number",
+            "total_liquido": "number"
         }
     },
     "formulario22": {

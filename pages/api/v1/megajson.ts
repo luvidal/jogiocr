@@ -51,35 +51,20 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const incomingDocs: IncomingDoc[] = req.body.documents
-    const requiredDocIds = getRequiredDocIds(incomingDocs)
-
     const documents: Record<string, any> = {}
-
-    for (const docId of requiredDocIds) {
-        const docSchema = reqDocs[docId as keyof typeof reqDocs]
-        if (!docSchema) continue
-
-        const template = createEmptyTemplate(docId)
-        if (!template) continue
-
-        documents[docId] = docSchema.multiple ? [template] : template
-    }
 
     for (const doc of incomingDocs) {
         const docSchema = reqDocs[doc.doctypeid as keyof typeof reqDocs]
         if (!docSchema) continue
 
-        const template = createEmptyTemplate(doc.doctypeid)
-        if (!template) continue
-
         if (docSchema.multiple) {
             const dataArr = Array.isArray(doc.data) ? doc.data : [doc.data]
-            if (dataArr.length) {
-                documents[doc.doctypeid] = dataArr.map(item => mergeData({ ...template }, item))
-            }
+            documents[doc.doctypeid] = dataArr.filter(item => item && typeof item === 'object')
         } else {
             const dataObj = Array.isArray(doc.data) ? doc.data[0] : doc.data
-            documents[doc.doctypeid] = mergeData({ ...template }, dataObj)
+            if (dataObj && typeof dataObj === 'object') {
+                documents[doc.doctypeid] = dataObj
+            }
         }
 
         if (doc.periodo) {
@@ -117,41 +102,54 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const liquidaciones = documents['liquidacion-sueldo']
     if (Array.isArray(liquidaciones) && liquidaciones.length) {
-        const items = liquidaciones.filter(l => 
-            resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar') !== undefined
-        )
-        const getTotalPagar = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar')) || 0
-        const getImponible = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'base_imponible')) || 0
-        
-        aggregations.liquidacion_sueldo = {
-            count: items.length,
-            total_liquido: items.reduce((sum, l) => sum + getTotalPagar(l), 0),
-            avg_liquido: items.length ? items.reduce((sum, l) => sum + getTotalPagar(l), 0) / items.length : 0,
-            total_base_imponible: items.reduce((sum, l) => sum + getImponible(l), 0),
-            avg_base_imponible: items.length ? items.reduce((sum, l) => sum + getImponible(l), 0) / items.length : 0,
-            periodos: items.map(l => resolveField(l, 'liquidacion-sueldo', 'docdate')).filter(Boolean)
+        const items = liquidaciones.filter(l => {
+            const val = resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar')
+            return val !== undefined && val !== null && val !== ''
+        })
+        if (items.length > 0) {
+            const getTotalPagar = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar')) || 0
+            const getImponible = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'base_imponible')) || 0
+            
+            aggregations.liquidacion_sueldo = {
+                count: items.length,
+                total_liquido: items.reduce((sum, l) => sum + getTotalPagar(l), 0),
+                avg_liquido: items.reduce((sum, l) => sum + getTotalPagar(l), 0) / items.length,
+                total_base_imponible: items.reduce((sum, l) => sum + getImponible(l), 0),
+                avg_base_imponible: items.reduce((sum, l) => sum + getImponible(l), 0) / items.length,
+                periodos: items.map(l => resolveField(l, 'liquidacion-sueldo', 'docdate')).filter(Boolean)
+            }
         }
     }
 
     const boletas = documents['boletas-anual']
     if (Array.isArray(boletas) && boletas.length) {
-        const items = boletas.filter(b => resolveField(b, 'boletas-anual', 'total_liquido') !== undefined)
-        aggregations.boletas_anual = {
-            count: items.length,
-            total_liquido: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'total_liquido')) || 0), 0),
-            total_honorario_bruto: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'honorario_bruto')) || 0), 0),
-            años: items.map(b => b.año).filter(Boolean)
+        const items = boletas.filter(b => {
+            const val = resolveField(b, 'boletas-anual', 'total_liquido')
+            return val !== undefined && val !== null && val !== ''
+        })
+        if (items.length > 0) {
+            aggregations.boletas_anual = {
+                count: items.length,
+                total_liquido: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'total_liquido')) || 0), 0),
+                total_honorario_bruto: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'honorario_bruto')) || 0), 0),
+                años: items.map(b => resolveField(b, 'boletas-anual', 'año')).filter(Boolean)
+            }
         }
     }
 
     const cuentas = documents['cuenta-bancaria']
     if (Array.isArray(cuentas) && cuentas.length) {
-        const items = cuentas.filter(c => resolveField(c, 'cuenta-bancaria', 'saldo_final') !== undefined)
-        aggregations.cuenta_bancaria = {
-            count: items.length,
-            saldo_final_promedio: items.length ? items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'saldo_final')) || 0), 0) / items.length : 0,
-            total_abonos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_abonos')) || 0), 0),
-            total_cargos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_cargos')) || 0), 0)
+        const items = cuentas.filter(c => {
+            const val = resolveField(c, 'cuenta-bancaria', 'saldo_final')
+            return val !== undefined && val !== null && val !== ''
+        })
+        if (items.length > 0) {
+            aggregations.cuenta_bancaria = {
+                count: items.length,
+                saldo_final_promedio: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'saldo_final')) || 0), 0) / items.length,
+                total_abonos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_abonos')) || 0), 0),
+                total_cargos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_cargos')) || 0), 0)
+            }
         }
     }
 
@@ -162,7 +160,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             allRuts: Array.from(allRuts).filter(Boolean),
             allNames: Array.from(allNames).filter(Boolean),
             generatedAt: new Date().toISOString(),
-            requiredDocs: requiredDocIds,
+            requiredDocs: Object.keys(documents),
             providedDocs: incomingDocs.map(d => d.doctypeid),
             aggregations
         },
