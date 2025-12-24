@@ -58,7 +58,9 @@ Return ONLY valid JSON array:
   }
 ]
 
-Rules for docdate:
+Rules:
+- data MUST include the extracted values for the Expected fields (use null if not found)
+- Do not return an empty object for data
 - docdate is the relevant date found in the document (issued/signed)
 - If Document is frequency year, use YYYY-01-01
 - If Document frequency is month, use YYYY-MM-01
@@ -79,6 +81,8 @@ Return ONLY valid JSON array:
 Rules:
 - One entry per detected document instance (repeat id if needed)
 - If none, return []
+- data MUST include extracted values for that document (use null if not found)
+- Do not return an empty object for data
 - docdate rules:
   - relevant date found in the document (issued/signed)
   - If the document frequency is year, use YYYY-01-01
