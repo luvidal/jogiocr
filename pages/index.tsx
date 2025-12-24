@@ -1,7 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import DataViewer from '@/components/DataViewer'
-import Modal from '@/components/Modal'
 import LoginModal from '@/components/LoginModal'
 
 const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false })
@@ -10,8 +8,7 @@ export default function Home() {
   const [isAuth, setIsAuth] = useState(false)
   const [model, setModel] = useState<'flash'>('flash')
   const [json, setJson] = useState<unknown>(null)
-  const [megaJson, setMegaJson] = useState<unknown>(null)
-  const [showMegaModal, setShowMegaModal] = useState(false)
+  const [activeDocKey, setActiveDocKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
@@ -48,6 +45,9 @@ export default function Home() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error al procesar')
       setJson(data)
+      const first = (data as any)?.documents?.[0]
+      const firstKey = first ? `${first?.id || 'doc'}-${first?.docdate || 0}-0` : null
+      setActiveDocKey(firstKey)
         ; (data as any)?.files?.forEach((f: any) => {
           if (!f?.base64 || !f?.filename) return
           const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0))
@@ -73,23 +73,6 @@ export default function Home() {
     if (file) handleSend()
   }, [model])
 
-  const handleMegaJson = async () => {
-    if (!json) return
-    try {
-      const res = await fetch('/api/v1/megajson', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documents: (json as any)?.documents || [] })
-      })
-      if (!res.ok) throw new Error('Failed')
-      const data = await res.json()
-      setMegaJson(data)
-      setShowMegaModal(true)
-    } catch (e) {
-      console.error(e)
-      alert('Error generating Mega JSON')
-    }
-  }
 
   const handleFile = (f?: File) => {
     if (!f) return
@@ -277,22 +260,43 @@ export default function Home() {
                       <div className='text-sm font-semibold text-gray-100 truncate'>Result</div>
                     </div>
                   </div>
-                  {('documents' in json) && Array.isArray((json as any).documents) && (json as any).documents.length > 0 && (
+                  {Array.isArray((json as any)?.documents) && (json as any).documents.length > 0 && (
                     <span className='text-[11px] text-yellow-500 bg-[#0a0a0a] px-2 py-1 rounded-md border border-yellow-500/30 shrink-0 font-semibold'>
                       {(json as any).documents.length} documento{(json as any).documents.length > 1 ? 's' : ''}
                     </span>
                   )}
                 </div>
+
+                {Array.isArray((json as any)?.documents) && (json as any).documents.length > 0 && (
+                  <div className='shrink-0 px-4 pt-4'>
+                    <div className='inline-flex flex-wrap gap-2'>
+                      {(json as any).documents?.map((d: any, idx: number) => {
+                        const id = d?.id
+                        if (!id) return null
+                        const docdate = d?.docdate
+                        const key = `${id}-${docdate || idx}-${idx}`
+                        const active = key === activeDocKey
+                        return (
+                          <button
+                            key={key}
+                            type='button'
+                            onClick={() => setActiveDocKey(key)}
+                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${active ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-[#0a0a0a] text-gray-300 border-[#2a2a2a] hover:bg-white/5'}`}
+                          >
+                            {docdate ? `${id} • ${docdate}` : id}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className='flex-1 p-6 overflow-auto'>
-                  <DataViewer data={json} simpleMode={true} />
+                  <pre className='bg-[#0c0c0c] border border-[#1f1f1f] rounded-xl text-gray-200 text-xs font-mono p-5 whitespace-pre-wrap break-all overflow-auto shadow-2xl'>
+                    {JSON.stringify((json as any)?.documents?.find((d: any, idx: number) => `${d?.id || 'doc'}-${d?.docdate || 0}-${idx}` === activeDocKey) || json, null, 2)}
+                  </pre>
                 </div>
               </div>
-              <button
-                onClick={handleMegaJson}
-                className='w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 text-yellow-500 cursor-pointer hover:border-yellow-500/50 hover:bg-yellow-500/10 transition-all'
-              >
-                Report
-              </button>
             </div>
           ) : (
             <div className='flex-1 flex flex-col items-center justify-center text-center px-6'>
@@ -311,14 +315,6 @@ export default function Home() {
           )}
         </div>
       </section>
-
-      <Modal
-        isOpen={showMegaModal}
-        onClose={() => setShowMegaModal(false)}
-        title='Reporte IA'
-      >
-        <DataViewer data={megaJson} simpleMode={false} />
-      </Modal>
 
       <LoginModal isOpen={!isAuth} onSuccess={() => setIsAuth(true)} />
     </main>
