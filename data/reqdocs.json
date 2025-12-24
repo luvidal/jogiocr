@@ -55,21 +55,21 @@
         "id": "liquidacion-sueldo",
         "freq": "month",
         "fields": {
-            "nombre": "RAMIREZ MUÑOZ NICOLE ALEJANDRA",
-            "rut": "19409381-0",
-            "labor": "AUXILIAR DE ASEO",
-            "dias_trabajados": "30",
-            "email": "someone@gmail.com",
-            "sueldo_base_sub_general": "638.572",
-            "asignacion_ley_19464": "35.989",
-            "total_imponible": "674.561",
-            "afp_nombre": "AFP Modelo",
-            "afp_pago": "71.369",
-            "isapre_nombre": "FONASA",
-            "isapre_pago": "10.000",
-            "total_descto_previsionals": "118.588",
-            "total_hab_liquido": "555.973",
-            "total_a_pagar": "555.973"
+            "nombre": "string",
+            "rut": "string",
+            "labor": "string",
+            "dias_trabajados": "number",
+            "email": "string",
+            "sueldo_base_sub_general": "number",
+            "asignacion_ley_19464": "number",
+            "total_imponible": "number",
+            "afp_nombre": "string",
+            "afp_pago": "number",
+            "isapre_nombre": "string",
+            "isapre_pago": "number",
+            "total_descto_previsionals": "number",
+            "total_hab_liquido": "number",
+            "total_a_pagar": "number"
         }
     },
     {
@@ -87,11 +87,9 @@
         "id": "avaluo-fiscal",
         "freq": "year",
         "fields": {
-            "rut": "string",
-            "folio": "number",
-            "año_tributario": "number",
-            "total_a_pagar": "number",
-            "devolucion_solicitada": "number"
+            "rol": "string",
+            "avaluo": "number",
+            "direccion": "string"
         }
     },
     {
@@ -130,11 +128,20 @@
         "freq": "day",
         "fields": {
             "folio": "string",
+            "codigo_verificacion": "string",
+            "circunscripcion": "string",
+            "numero_inscripcion": "string",
+            "año_registro": "number",
             "marido_nombre": "string",
             "marido_rut": "string",
+            "marido_fecha_nacimiento": "date",
             "mujer_nombre": "string",
             "mujer_rut": "string",
-            "fecha_celebracion": "date"
+            "mujer_fecha_nacimiento": "date",
+            "fecha_celebracion": "date",
+            "hora_celebracion": "string",
+            "regimen_patrimonial": "string",
+            "fecha_emision": "date"
         }
     },
     {
@@ -231,6 +238,105 @@
             "monto_ahorro": "number",
             "fecha_inicio_vigencia": "date",
             "fecha_termino_vigencia": "date"
+        }
+    },
+    {
+        "id": "creditos",
+        "freq": "day",
+        "fields": {
+            "tipo": "string",
+            "monto": "number",
+            "entidad": "string"
+        }
+    },
+    {
+        "id": "acreditacion-cuota",
+        "freq": "month",
+        "fields": {
+            "rut": "string",
+            "cuota": "number",
+            "periodo": "string"
+        }
+    },
+    {
+        "id": "certificado-cotizaciones",
+        "freq": "month",
+        "fields": {
+            "rut": "string",
+            "nombre": "string",
+            "periodo": "string",
+            "monto_cotizado": "number"
+        }
+    },
+    {
+        "id": "inversiones",
+        "freq": "day",
+        "fields": {
+            "titular": "string",
+            "banco": "string",
+            "saldo": "number"
+        }
+    },
+    {
+        "id": "cotizacion-propiedad",
+        "freq": "day",
+        "fields": {
+            "direccion": "string",
+            "valor_comercial": "number"
+        }
+    },
+    {
+        "id": "compraventa-propiedad",
+        "freq": "day",
+        "fields": {
+            "comprador": "string",
+            "vendedor": "string",
+            "direccion": "string",
+            "monto": "number"
+        }
+    },
+    {
+        "id": "pagos-renta-vitalicia",
+        "freq": "month",
+        "fields": {
+            "beneficiario": "string",
+            "monto_mensual": "number"
+        }
+    },
+    {
+        "id": "informe-deuda",
+        "freq": "day",
+        "fields": {
+            "rut": "string",
+            "deuda_total": "number",
+            "entidad": "string"
+        }
+    },
+    {
+        "id": "carpeta-tributaria",
+        "freq": "year",
+        "fields": {
+            "rut": "string",
+            "nombre": "string",
+            "actividades": "array"
+        }
+    },
+    {
+        "id": "certificado-no-matrimonio",
+        "freq": "day",
+        "fields": {
+            "rut": "string",
+            "nombre": "string"
+        }
+    },
+    {
+        "id": "certificado-empleador",
+        "freq": "day",
+        "fields": {
+            "empleador": "string",
+            "empleado": "string",
+            "cargo": "string",
+            "fecha_ingreso": "date"
         }
     }
 ]
