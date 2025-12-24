@@ -6,7 +6,7 @@ type ViewerMode = 'table' | 'json'
 const resolveField = (obj: any, docType: string, fieldName: string): any => {
   if (!obj) return undefined
   if (obj[fieldName] !== undefined && obj[fieldName] !== '') return obj[fieldName]
-  
+
   const aliases = (fieldAliases as any)[docType]?.[fieldName]
   if (aliases && Array.isArray(aliases)) {
     for (const alias of aliases) {
@@ -105,7 +105,7 @@ const TableView = ({ data, simpleMode }: { data: unknown, simpleMode?: boolean }
 
   const halfLength = Math.ceil(entries.length / 2)
   const rows = []
-  
+
   for (let i = 0; i < halfLength; i++) {
     const left = entries[i]
     const right = entries[i + halfLength]
@@ -116,10 +116,10 @@ const TableView = ({ data, simpleMode }: { data: unknown, simpleMode?: boolean }
     <div className='rounded-xl border border-[#1f1f1f] bg-[#0c0c0c] overflow-auto shadow-2xl'>
       <table className='w-full text-xs table-fixed'>
         <colgroup>
-          <col style={{width: '20%'}} />
-          <col style={{width: '30%'}} />
-          <col style={{width: '20%'}} />
-          <col style={{width: '30%'}} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '30%' }} />
+          <col style={{ width: '20%' }} />
+          <col style={{ width: '30%' }} />
         </colgroup>
         <tbody>
           {rows.map((row, idx) => (
@@ -176,7 +176,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
 
   if (isMegaJsonFormat) {
     return (
-      <div className='flex flex-col' style={{height: 'calc(85vh - 200px)'}}>
+      <div className='flex flex-col' style={{ height: 'calc(85vh - 200px)' }}>
         <div className='shrink-0 mb-4 flex items-center justify-between'>
           <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c]'>
             <button
@@ -216,41 +216,41 @@ const DataViewer = ({ data, simpleMode }: Props) => {
                         <thead className='bg-[#0f0f0f] border-b border-yellow-500/20'>
                           <tr>
                             <th className='px-4 py-3 text-left text-gray-400 font-semibold'>Periodo</th>
-                        <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total a Pagar</th>
-                        <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total Imponible</th>
-                        <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total Haberes</th>
+                            <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total a Pagar</th>
+                            <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total Imponible</th>
+                            <th className='px-4 py-3 text-right text-gray-400 font-semibold'>Total Haberes</th>
                           </tr>
                         </thead>
                         <tbody>
                           {dataObj.documents['liquidacion-sueldo'].map((item: any, idx: number) => {
-                        const periodo = resolveField(item, 'liquidacion-sueldo', 'docdate') || '-'
-                        const totalPagar = resolveField(item, 'liquidacion-sueldo', 'liquido_a_pagar')
-                        const totalImponible = resolveField(item, 'liquidacion-sueldo', 'base_imponible')
-                        const totalHaberes = resolveField(item, 'liquidacion-sueldo', 'base_tributable')
-                        return (
-                          <tr key={idx} className='border-b border-[#1f1f1f] hover:bg-white/5 transition-colors'>
-                            <td className='px-4 py-3 text-gray-200 font-semibold'>{periodo}</td>
-                            <td className='px-4 py-3 text-right text-green-400 font-semibold'>
-                              {totalPagar ? `${Number(totalPagar).toLocaleString('es-CL')}` : '-'}
-                            </td>
-                            <td className='px-4 py-3 text-right text-gray-300'>
-                              {totalImponible ? `${Number(totalImponible).toLocaleString('es-CL')}` : '-'}
-                            </td>
-                            <td className='px-4 py-3 text-right text-gray-300'>
-                              {totalHaberes ? `${Number(totalHaberes).toLocaleString('es-CL')}` : '-'}
-                            </td>
-                          </tr>
-                        )
-                      })}
+                            const periodo = resolveField(item, 'liquidacion-sueldo', 'docdate') || '-'
+                            const totalPagar = resolveField(item, 'liquidacion-sueldo', 'liquido_a_pagar')
+                            const totalImponible = resolveField(item, 'liquidacion-sueldo', 'base_imponible')
+                            const totalHaberes = resolveField(item, 'liquidacion-sueldo', 'base_tributable')
+                            return (
+                              <tr key={idx} className='border-b border-[#1f1f1f] hover:bg-white/5 transition-colors'>
+                                <td className='px-4 py-3 text-gray-200 font-semibold'>{periodo}</td>
+                                <td className='px-4 py-3 text-right text-green-400 font-semibold'>
+                                  {totalPagar ? `${Number(totalPagar).toLocaleString('es-CL')}` : '-'}
+                                </td>
+                                <td className='px-4 py-3 text-right text-gray-300'>
+                                  {totalImponible ? `${Number(totalImponible).toLocaleString('es-CL')}` : '-'}
+                                </td>
+                                <td className='px-4 py-3 text-right text-gray-300'>
+                                  {totalHaberes ? `${Number(totalHaberes).toLocaleString('es-CL')}` : '-'}
+                                </td>
+                              </tr>
+                            )
+                          })}
                           {dataObj.meta.aggregations?.liquidacion_sueldo && (
                             <tr className='bg-yellow-500/10 border-t-2 border-yellow-500/30'>
                               <td className='px-4 py-3 text-yellow-500 font-bold'>TOTAL / AVG</td>
                               <td className='px-4 py-3 text-right text-yellow-500 font-bold'>
-                                ${dataObj.meta.aggregations.liquidacion_sueldo.total_liquido?.toLocaleString()} / 
+                                ${dataObj.meta.aggregations.liquidacion_sueldo.total_liquido?.toLocaleString()} /
                                 ${Math.round(dataObj.meta.aggregations.liquidacion_sueldo.avg_liquido)?.toLocaleString()}
                               </td>
                               <td className='px-4 py-3 text-right text-yellow-500 font-bold'>
-                                ${dataObj.meta.aggregations.liquidacion_sueldo.total_base_imponible?.toLocaleString()} / 
+                                ${dataObj.meta.aggregations.liquidacion_sueldo.total_base_imponible?.toLocaleString()} /
                                 ${Math.round(dataObj.meta.aggregations.liquidacion_sueldo.avg_base_imponible)?.toLocaleString()}
                               </td>
                               <td className='px-4 py-3 text-right'></td>
@@ -326,7 +326,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
 
                             return (
                               <tr key={idx} className='border-b border-[#1f1f1f] hover:bg-white/5 transition-colors'>
-                                <td className='px-4 py-3 text-gray-200 font-semibold'>{item.fecha || item.__periodo || '-'}</td>
+                                <td className='px-4 py-3 text-gray-200 font-semibold'>{item.fecha || item.docdate || '-'}</td>
                                 <td className='px-4 py-3 text-right text-green-400 font-semibold'>
                                   {saldoFinal != null && saldoFinal !== '' ? `${Number(saldoFinal).toLocaleString('es-CL')}` : '-'}
                                 </td>
@@ -391,13 +391,11 @@ const DataViewer = ({ data, simpleMode }: Props) => {
   }
 
   if (isMultiDocFormat) {
-    const documents = dataObj.documents as Array<{
-      doctypeid: string
-      matched: boolean
-      multiple: boolean
-      periodo: string | null
-      data: Record<string, any> | Record<string, any>[]
-    }>
+    const documents = (dataObj.documents as any[])?.map(d => ({
+      id: d?.id || 'unknown',
+      docdate: d?.docdate || null,
+      data: d?.data || {}
+    })) || []
 
     if (documents.length === 0) {
       return <div className='text-sm text-gray-500'>No documents found</div>
@@ -405,9 +403,9 @@ const DataViewer = ({ data, simpleMode }: Props) => {
 
     const currentDoc = documents[activeDoc]
     const entries = Array.isArray(currentDoc.data) ? currentDoc.data : [currentDoc.data]
-    const hasMultiplePeriods = currentDoc.multiple && entries.length > 1
+    const hasMultiplePeriods = entries.length > 1
     const currentData = hasMultiplePeriods ? entries[activePeriod] : entries[0]
-    const titlePeriod = currentDoc.periodo || currentData?.periodo
+    const titlePeriod = currentDoc.docdate
 
     return (
       <div className='space-y-3'>
@@ -426,7 +424,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
                   }}
                   className={`px-4 py-2 text-xs font-semibold transition-colors ${activeTab ? 'bg-yellow-500 text-black' : 'text-gray-400 hover:text-gray-100 hover:bg-white/5'}`}
                 >
-                  {doc.doctypeid}
+                  {doc.id}
                 </button>
               )
             })}
@@ -437,15 +435,11 @@ const DataViewer = ({ data, simpleMode }: Props) => {
           <div className='min-w-0'>
             <div className='flex items-center gap-2 min-w-0'>
               <div className='text-sm font-semibold text-gray-100 truncate'>
-                {currentDoc.doctypeid}
+                {currentDoc.id}
               </div>
               {titlePeriod ? <div className='text-xs text-gray-500 font-medium truncate'>• {titlePeriod}</div> : null}
             </div>
             <div className='mt-1 flex flex-wrap gap-1.5'>
-              <Badge color={currentDoc.matched ? 'green' : 'red'}>
-                {currentDoc.matched ? 'OK' : 'Revisar'}
-              </Badge>
-              {currentDoc.multiple && <Badge color='yellow'>Multi</Badge>}
               {entries.length > 0 && <Badge color='green'>{entries.length}</Badge>}
             </div>
           </div>
@@ -477,7 +471,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
             {hasMultiplePeriods && (
               <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c] flex-wrap'>
                 {entries.map((item, idx) => {
-                  const label = item?.periodo || `Registro ${idx + 1}`
+                  const label = item?.docdate || `Registro ${idx + 1}`
                   const activeTab = idx === activePeriod
                   return (
                     <button
@@ -501,7 +495,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
   }
 
   // Legacy format support (old single-document format)
-  const isDocEnvelope = typeof data === 'object' && ('doctypeid' in data || 'matched' in data || 'data' in data)
+  const isDocEnvelope = typeof data === 'object' && ('doctypeid' in dataObj || 'matched' in dataObj || 'data' in dataObj)
   const entries = Array.isArray(dataObj.data) ? dataObj.data : dataObj.data ? [dataObj.data] : []
   const hasMultiple = Boolean(dataObj.multiple && entries.length > 0)
   const current = hasMultiple ? entries[Math.min(activePeriod, entries.length - 1)] : entries[0] || data
@@ -555,7 +549,7 @@ const DataViewer = ({ data, simpleMode }: Props) => {
           {hasMultiple && (
             <div className='inline-flex rounded-lg border border-[#2a2a2a] overflow-hidden bg-[#0c0c0c] flex-wrap'>
               {entries.map((item, idx) => {
-                const label = item?.periodo || `Registro ${idx + 1}`
+                const label = item?.docdate || `Registro ${idx + 1}`
                 const activeTab = idx === activePeriod
                 return (
                   <button

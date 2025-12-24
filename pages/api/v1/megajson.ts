@@ -2,28 +2,32 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import reqDocs from '@/data/reqdocs.json'
 import fieldAliases from '@/data/field-aliases.json'
 
-type IncomingDoc = {
-    doctypeid: string
-    periodo?: string
-    data: Record<string, any> | Record<string, any>[]
+type ReqDoc = {
+    id: string
+    freq: 'day' | 'month' | 'year' | 'none'
+    fields: Record<string, unknown>
 }
 
-function resolveField(obj: any, docType: string, fieldName: string): any {
-    if (!obj) return undefined
-    if (obj[fieldName] !== undefined) return obj[fieldName]
+type IncomingDoc = {
+    id: string
+    docdate: string
+    data: Record<string, unknown> | Record<string, unknown>[]
+}
 
-    const docAliases = (fieldAliases as any)[docType]
-    if (docAliases) {
-        const aliases = docAliases[fieldName]
-        if (aliases && Array.isArray(aliases)) {
-            for (const alias of aliases) {
-                if (obj[alias] !== undefined) return obj[alias]
-            }
-        }
+function resolveField(obj: unknown, docType: string, fieldName: string): unknown {
+    if (!obj || typeof obj !== 'object') return undefined
+
+    const rec = obj as Record<string, unknown>
+    if (rec[fieldName] !== undefined) return rec[fieldName]
+
+    const docAliases = (fieldAliases as Record<string, Record<string, string[]>>)?.[docType]
+    const aliases = docAliases?.[fieldName] || []
+    for (const alias of aliases) {
+        if (rec[alias] !== undefined) return rec[alias]
     }
+
     return undefined
 }
-
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST' || !Array.isArray(req.body?.documents)) {
@@ -31,30 +35,28 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     }
 
     const incomingDocs: IncomingDoc[] = req.body.documents
-    const documents: Record<string, any> = {}
+    const documents: Record<string, unknown> = {}
+
+    const schemas = (reqDocs as ReqDoc[]).reduce<Record<string, ReqDoc>>(
+        (acc, d) => (d?.id ? { ...acc, [d.id]: d } : acc),
+        {}
+    )
 
     for (const doc of incomingDocs) {
-        const docSchema = reqDocs[doc.doctypeid as keyof typeof reqDocs]
+        const docSchema = schemas[doc.id]
         if (!docSchema) continue
 
-        if (docSchema.multiple) {
-            const dataArr = Array.isArray(doc.data) ? doc.data : [doc.data]
-            documents[doc.doctypeid] = dataArr.filter(item => item && typeof item === 'object')
-        } else {
-            const dataObj = Array.isArray(doc.data) ? doc.data[0] : doc.data
-            if (dataObj && typeof dataObj === 'object') {
-                documents[doc.doctypeid] = dataObj
-            }
-        }
+        const dataArr = Array.isArray(doc.data) ? doc.data : [doc.data]
+        const cleanArr = dataArr.filter(item => item && typeof item === 'object')
+        documents[doc.id] = cleanArr.length <= 1 ? cleanArr[0] : cleanArr
 
-        if (doc.periodo) {
-            if (docSchema.multiple) {
-                documents[doc.doctypeid]?.forEach((item: any) => {
-                    if (!item.__periodo) item.__periodo = doc.periodo
-                })
-            } else if (documents[doc.doctypeid]) {
-                documents[doc.doctypeid].__periodo = doc.periodo
-            }
+        if (doc.docdate) {
+            const entries = Array.isArray(documents[doc.id]) ? (documents[doc.id] as unknown[]) : [documents[doc.id]]
+            entries?.forEach(item => {
+                if (!item || typeof item !== 'object') return
+                const rec = item as Record<string, unknown>
+                if (!rec.docdate) rec.docdate = doc.docdate
+            })
         }
     }
 
@@ -78,7 +80,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         })
     }
 
-    const aggregations: Record<string, any> = {}
+    const aggregations: Record<string, unknown> = {}
 
     const liquidaciones = documents['liquidacion-sueldo']
     if (Array.isArray(liquidaciones) && liquidaciones.length) {
@@ -87,8 +89,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             return val !== undefined && val !== null && val !== ''
         })
         if (items.length > 0) {
-            const getTotalPagar = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar')) || 0
-            const getImponible = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'base_imponible')) || 0
+            const getTotalPagar = (l: unknown) => parseFloat(String(resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar') || 0)) || 0
+            const getImponible = (l: unknown) => parseFloat(String(resolveField(l, 'liquidacion-sueldo', 'base_imponible') || 0)) || 0
 
             aggregations.liquidacion_sueldo = {
                 count: items.length,
@@ -110,8 +112,8 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (items.length > 0) {
             aggregations.boletas_anual = {
                 count: items.length,
-                total_liquido: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'total_liquido')) || 0), 0),
-                total_honorario_bruto: items.reduce((sum, b) => sum + (parseFloat(resolveField(b, 'boletas-anual', 'honorario_bruto')) || 0), 0),
+                total_liquido: items.reduce((sum, b) => sum + (parseFloat(String(resolveField(b, 'boletas-anual', 'total_liquido') || 0)) || 0), 0),
+                total_honorario_bruto: items.reduce((sum, b) => sum + (parseFloat(String(resolveField(b, 'boletas-anual', 'honorario_bruto') || 0)) || 0), 0),
                 años: items.map(b => resolveField(b, 'boletas-anual', 'año')).filter(Boolean)
             }
         }
@@ -126,9 +128,9 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (items.length > 0) {
             aggregations.cuenta_bancaria = {
                 count: items.length,
-                saldo_final_promedio: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'saldo_final')) || 0), 0) / items.length,
-                total_abonos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_abonos')) || 0), 0),
-                total_cargos: items.reduce((sum, c) => sum + (parseFloat(resolveField(c, 'cuenta-bancaria', 'total_cargos')) || 0), 0)
+                saldo_final_promedio: items.reduce((sum, c) => sum + (parseFloat(String(resolveField(c, 'cuenta-bancaria', 'saldo_final') || 0)) || 0), 0) / items.length,
+                total_abonos: items.reduce((sum, c) => sum + (parseFloat(String(resolveField(c, 'cuenta-bancaria', 'total_abonos') || 0)) || 0), 0),
+                total_cargos: items.reduce((sum, c) => sum + (parseFloat(String(resolveField(c, 'cuenta-bancaria', 'total_cargos') || 0)) || 0), 0)
             }
         }
     }
@@ -141,7 +143,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
             allNames: Array.from(allNames).filter(Boolean),
             generatedAt: new Date().toISOString(),
             requiredDocs: Object.keys(documents),
-            providedDocs: incomingDocs.map(d => d.doctypeid),
+            providedDocs: incomingDocs.map(d => d.id),
             aggregations
         },
         documents

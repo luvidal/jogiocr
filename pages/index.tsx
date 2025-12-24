@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import DataViewer from '@/components/DataViewer'
 import Modal from '@/components/Modal'
@@ -18,6 +18,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false)
   const [elapsed, setElapsed] = useState(0)
   const [imageScale, setImageScale] = useState(1)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!loading) return
@@ -47,6 +48,16 @@ export default function Home() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Error al procesar')
       setJson(data)
+        ; (data as any)?.files?.forEach((f: any) => {
+          if (!f?.base64 || !f?.filename) return
+          const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0))
+          const blob = new Blob([bytes], { type: 'application/pdf' })
+          const a = document.createElement('a')
+          a.href = URL.createObjectURL(blob)
+          a.download = f.filename
+          a.click()
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+        })
     } catch (e: any) {
       setError(e.message)
     } finally {
@@ -68,7 +79,7 @@ export default function Home() {
       const res = await fetch('/api/v1/megajson', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(json)
+        body: JSON.stringify({ documents: (json as any)?.documents || [] })
       })
       if (!res.ok) throw new Error('Failed')
       const data = await res.json()
@@ -216,7 +227,7 @@ export default function Home() {
 
             <button
               type='button'
-              onClick={() => document.getElementById('fileInput')?.click()}
+              onClick={() => fileInputRef.current?.click()}
               className='w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 text-yellow-500 cursor-pointer hover:border-yellow-500/50 focus:outline-none focus:border-yellow-500/60 focus:ring-4 focus:ring-yellow-500/10 transition-all'
             >
               Seleccionar Archivo
@@ -224,10 +235,14 @@ export default function Home() {
           </div>
 
           <input
+            ref={fileInputRef}
             id='fileInput'
             type='file'
             accept='image/*,application/pdf'
             className='hidden'
+            onClick={e => {
+              ; (e.currentTarget.value as any) = ''
+            }}
             onChange={e => handleFile(e.target.files?.[0])}
           />
         </aside>

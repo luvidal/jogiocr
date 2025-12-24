@@ -1,7 +1,7 @@
-{
-    "cedula-identidad": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+[
+    {
+        "id": "cedula-identidad",
+        "freq": "none",
         "fields": {
             "rut": "string",
             "nombres": "string",
@@ -16,9 +16,9 @@
             "profesion": "string"
         }
     },
-    "certificado-nacimiento": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "certificado-nacimiento",
+        "freq": "none",
         "fields": {
             "folio": "string",
             "codigo_verificacion": "string",
@@ -37,10 +37,9 @@
             "fecha_emision": "date"
         }
     },
-    "contrato-arriendo": {
-        "multiple": true,
-        "campo_clave": "periodo",
-        "docdate": "YYYY-MM",
+    {
+        "id": "contrato-arriendo",
+        "freq": "month",
         "fields": {
             "nombre": "string",
             "rut": "string",
@@ -52,10 +51,9 @@
             "liquido_a_pagar": "number"
         }
     },
-    "liquidacion-sueldo": {
-        "multiple": true,
-        "campo_clave": "año",
-        "docdate": "YYYY",
+    {
+        "id": "liquidacion-sueldo",
+        "freq": "month",
         "fields": {
             "rut": "string",
             "contribuyente": "string",
@@ -64,9 +62,9 @@
             "total_liquido": "number"
         }
     },
-    "padron": {
-        "multiple": false,
-        "docdate": "YYYY",
+    {
+        "id": "padron",
+        "freq": "year",
         "fields": {
             "rut": "string",
             "nombres": "string",
@@ -74,9 +72,9 @@
             "numero_folio": "string"
         }
     },
-    "avaluo-fiscal": {
-        "multiple": false,
-        "docdate": "YYYY",
+    {
+        "id": "avaluo-fiscal",
+        "freq": "year",
         "fields": {
             "rut": "string",
             "folio": "number",
@@ -85,10 +83,9 @@
             "devolucion_solicitada": "number"
         }
     },
-    "boletas-anual": {
-        "multiple": true,
-        "campo_clave": "año",
-        "docdate": "YYYY",
+    {
+        "id": "boletas-anual",
+        "freq": "year",
         "fields": {
             "rut": "string",
             "contribuyente": "string",
@@ -97,9 +94,9 @@
             "total_liquido": "number"
         }
     },
-    "formulario22": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "formulario22",
+        "freq": "day",
         "fields": {
             "patente": "string",
             "marca": "string",
@@ -109,18 +106,18 @@
             "valor_estimado_clp": "number"
         }
     },
-    "declaracion-aprobada": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "declaracion-aprobada",
+        "freq": "day",
         "fields": {
             "rol": "string",
             "direccion": "string",
             "avaluo": "number"
         }
     },
-    "certificado-matrimonio": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "certificado-matrimonio",
+        "freq": "none",
         "fields": {
             "folio": "string",
             "marido_nombre": "string",
@@ -130,9 +127,9 @@
             "fecha_celebracion": "date"
         }
     },
-    "contrato-trabajo": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "contrato-trabajo",
+        "freq": "none",
         "fields": {
             "empleador_nombre": "string",
             "empleador_rut": "string",
@@ -154,10 +151,9 @@
             "fecha_firma": "date"
         }
     },
-    "cuenta-bancaria": {
-        "multiple": true,
-        "campo_clave": "fecha",
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "cuenta-bancaria",
+        "freq": "month",
         "fields": {
             "banco": "string",
             "tipo_cuenta": "string",
@@ -174,9 +170,9 @@
             "saldo": "number"
         }
     },
-    "informe-comercial": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "informe-comercial",
+        "freq": "day",
         "fields": {
             "periodo": "date",
             "nombre": "string",
@@ -201,9 +197,9 @@
             "consultas_al_rut": "number"
         }
     },
-    "cartola-postulacion-vivienda": {
-        "multiple": false,
-        "docdate": "YYYY-MM-DD",
+    {
+        "id": "cartola-postulacion-vivienda",
+        "freq": "day",
         "fields": {
             "ministerio": "string",
             "tipo_cartola": "string",
@@ -227,4 +223,4 @@
             "fecha_termino_vigencia": "date"
         }
     }
-}
+]
