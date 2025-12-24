@@ -117,32 +117,18 @@ export default function Home() {
 
       <section className='flex flex-1 overflow-hidden'>
         <aside className='relative flex-1 basis-1/2 min-w-0 bg-[#0a0a0a] border-r border-[#1f1f1f] flex flex-col'>
-          <div className='p-6 border-b border-[#1f1f1f]'>
-            <div className='flex items-center justify-between gap-3'>
-              <div className='min-w-0'>
-                <div className='text-xs font-medium text-gray-500 uppercase tracking-wider'>Input</div>
-                <div className='mt-1 text-sm font-semibold text-gray-100 truncate'>
-                  {file ? file.name : 'No file selected'}
-                </div>
-              </div>
-              <div className='flex items-center gap-2 text-xs font-medium text-gray-400 shrink-0'>
-                <span className={`inline-block w-2 h-2 rounded-full ${file ? 'bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.6)]' : 'bg-gray-600'}`}></span>
-                <span>{file ? 'Ready' : 'Waiting'}</span>
-              </div>
-            </div>
-          </div>
 
-          <div className='flex-1 p-6 pt-4 overflow-auto flex flex-col gap-4'>
+          <div className='flex-1 p-6 overflow-auto flex flex-col gap-4'>
             <div
               onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
               onDragOver={e => e.preventDefault()}
-              className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
+              className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-start cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
             >
               {file ? (
                 preview && file.type === 'application/pdf' ? (
                   <PDFViewer fileUrl={preview} />
                 ) : preview ? (
-                  <div className='w-full h-[70vh] bg-[#0f0f0f] border border-[#1f1f1f] rounded-xl shadow-2xl flex flex-col overflow-hidden'>
+                  <div className='w-full flex-1 bg-[#0f0f0f] border border-[#1f1f1f] rounded-xl shadow-2xl flex flex-col overflow-hidden'>
                     <div className='flex items-center gap-2 px-4 py-3 border-b border-[#1f1f1f] bg-[#0c0c0c]'>
                       <div className='text-xs font-semibold text-gray-200'>Zoom</div>
                       <div className='flex items-center gap-1 ml-auto'>
