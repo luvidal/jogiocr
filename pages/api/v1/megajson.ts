@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
-import reqDocs from '@/data/reqdocsfields.json'
+import reqDocs from '@/data/reqdocs.json'
 import fieldAliases from '@/data/field-aliases.json'
 
 type IncomingDoc = {
@@ -11,7 +11,7 @@ type IncomingDoc = {
 function resolveField(obj: any, docType: string, fieldName: string): any {
     if (!obj) return undefined
     if (obj[fieldName] !== undefined) return obj[fieldName]
-    
+
     const docAliases = (fieldAliases as any)[docType]
     if (docAliases) {
         const aliases = docAliases[fieldName]
@@ -24,26 +24,6 @@ function resolveField(obj: any, docType: string, fieldName: string): any {
     return undefined
 }
 
-function getRequiredDocIds(docs: IncomingDoc[]): string[] {
-    // TODO: extend with missing docs not yet provided by user
-    return docs?.map(d => d.doctypeid) || []
-}
-
-function createEmptyTemplate(docId: string) {
-    const docSchema = reqDocs[docId as keyof typeof reqDocs]
-    if (!docSchema) return null
-    return Object.fromEntries(Object.keys(docSchema.fields).map(k => [k, '']))
-}
-
-function mergeData(template: any, incoming: any) {
-    if (!incoming || typeof incoming !== 'object') return template
-    for (const [k, v] of Object.entries(incoming)) {
-        if (v !== undefined && v !== null && !(typeof v === 'string' && v.trim() === '')) {
-            template[k] = v
-        }
-    }
-    return template
-}
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== 'POST' || !Array.isArray(req.body?.documents)) {
@@ -87,14 +67,14 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
 
     const allRuts = new Set<string>()
     const allNames = new Set<string>()
-    
+
     for (const docData of Object.values(documents)) {
         const entries = Array.isArray(docData) ? docData : [docData]
         entries.forEach(entry => {
             if (entry?.rut) allRuts.add(entry.rut)
-            ;['nombre', 'nombres', 'trabajador_nombre', 'titular_nombre'].forEach(key => {
-                if (entry?.[key]) allNames.add(entry[key])
-            })
+                ;['nombre', 'nombres', 'trabajador_nombre', 'titular_nombre'].forEach(key => {
+                    if (entry?.[key]) allNames.add(entry[key])
+                })
         })
     }
 
@@ -109,7 +89,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
         if (items.length > 0) {
             const getTotalPagar = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'liquido_a_pagar')) || 0
             const getImponible = (l: any) => parseFloat(resolveField(l, 'liquidacion-sueldo', 'base_imponible')) || 0
-            
+
             aggregations.liquidacion_sueldo = {
                 count: items.length,
                 total_liquido: items.reduce((sum, l) => sum + getTotalPagar(l), 0),

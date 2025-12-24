@@ -1,17 +1,17 @@
-import Anthropic from '@anthropic-ai/sdk'
-import OpenAI from 'openai'
-import reqfields from '@/data/reqdocsfields.json'
+import { GoogleGenAI } from '@google/genai'
+import reqdocs from '@/data/reqdocs.json'
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
+const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-type DocType = keyof typeof reqfields
+type DocType = keyof typeof reqdocs
+type JsonRecord = Record<string, unknown>
+
 type SingleDocResult = {
     doctypeid: string
     matched: boolean
     multiple: boolean
     periodo: string | null
-    data: Record<string, any> | Record<string, any>[]
+    data: JsonRecord | JsonRecord[]
 }
 type DocResult = {
     documents: SingleDocResult[]
@@ -20,14 +20,13 @@ type DocResult = {
 export async function Doc2Fields(
     buffer: Buffer,
     mimetype: string,
-    model: 'claude' | 'gpt5' = 'claude',
     doctype?: DocType
 ): Promise<DocResult> {
     const isImage = mimetype.startsWith('image/')
     const isPDF = mimetype === 'application/pdf'
     if (!isImage && !isPDF) throw new Error('Images and PDFs only')
 
-    const schemas = reqfields as any
+    const schemas = reqdocs as Record<string, { periodo?: string, campos?: JsonRecord }>
     const schemaInfo = doctype ? schemas[doctype] : null
     const periodoFormat = schemaInfo?.periodo || 'YYYY-MM-DD'
     const campos = schemaInfo?.campos || {}
@@ -91,59 +90,41 @@ Output format:
 IMPORTANT: Return data for ALL document types you find in the PDF, not just the first one.
 Return ONLY valid JSON, no markdown, no explanation.`
 
-    let text = ''
+    const parts = [
+        { text: prompt },
+        isPDF
+            ? { inlineData: { mimeType: 'application/pdf', data: base64 } }
+            : { inlineData: { mimeType: mimetype, data: base64 } }
+    ]
 
-    if (model === 'gpt5') {
-        if (isPDF) throw new Error('OpenAI does not support PDFs, use claude')
-        const response = await openai.chat.completions.create({
-            model: 'gpt-4o',
-            messages: [{
-                role: 'user', content: [
-                    { type: 'text', text: prompt },
-                    { type: 'image_url', image_url: { url: `data:${mimetype};base64,${base64}` } }
-                ]
-            }],
-            max_tokens: 8192,
-            temperature: 0
-        })
-        text = response.choices[0]?.message?.content || '{}'
-    } else {
-        const content: Anthropic.MessageCreateParamsNonStreaming['messages'][number]['content'] = [
-            { type: 'text', text: prompt },
-            isPDF
-                ? { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64 } }
-                : { type: 'image', source: { type: 'base64', media_type: mimetype as 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif', data: base64 } }
-        ]
+    const response = await genai.models.generateContent({
+        model: 'gemini-2.0-flash',
+        contents: parts,
+        config: { temperature: 0, maxOutputTokens: 8192 }
+    })
 
-        const message = await anthropic.messages.create({
-            model: 'claude-haiku-4-5-20251001',
-            max_tokens: 8192,
-            messages: [{ role: 'user', content }]
-        })
-
-        const textBlock = message.content.find(b => b.type === 'text')
-        text = textBlock && 'text' in textBlock ? textBlock.text : '{}'
-    }
+    let text = response.text || '{}'
 
     text = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const match = text.match(/\{[\s\S]*\}|\[[\s\S]*\]/)
     if (match) text = match[0]
 
-    let parsed: any
+    let parsed: unknown
     try {
-        parsed = JSON.parse(text)
+        parsed = JSON.parse(text) as unknown
     } catch (e) {
         throw new Error(`Failed to parse AI response: ${text}`)
     }
 
-    // Extract all document types found in the response
     const documents: SingleDocResult[] = []
 
-    for (const key of Object.keys(parsed)) {
+    const parsedObj = typeof parsed === 'object' && parsed && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {}
+
+    for (const key of Object.keys(parsedObj)) {
         // Skip non-document keys
         if (!schemas[key]) continue
 
-        let data = parsed[key]
+        let data = parsedObj[key]
 
         if (typeof data === 'string') {
             console.warn(`Skipping invalid data for ${key}: ${data}`)
@@ -154,9 +135,10 @@ Return ONLY valid JSON, no markdown, no explanation.`
 
         let periodo: string | null = null
         if (Array.isArray(data) && data.length > 0) {
-            periodo = data[0].periodo || null
-        } else if (data?.periodo) {
-            periodo = data.periodo
+            const first = data[0] as Record<string, unknown>
+            periodo = (first?.periodo as string) || null
+        } else if (data && typeof data === 'object') {
+            periodo = ((data as Record<string, unknown>)?.periodo as string) || null
         }
 
         documents.push({
@@ -164,7 +146,7 @@ Return ONLY valid JSON, no markdown, no explanation.`
             matched: true,
             multiple,
             periodo,
-            data
+            data: data as JsonRecord | JsonRecord[]
         })
     }
 

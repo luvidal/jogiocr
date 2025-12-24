@@ -26,7 +26,7 @@ This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-appl
 
 ## Environment Setup
 
-This project requires a server-side key for Anthropic and a shared access key to gate the ocr route.
+This project requires a server-side Gemini key.
 
 - Copy `.env.example` to `.env.local` and set your values:
 
@@ -35,15 +35,13 @@ cp .env.example .env.local
 ```
 
 - Edit `.env.local` and set:
-  - `ANTHROPIC_API_KEY` — server-side key from Anthropic.
+  - `GEMINI_API_KEY` — server-side key.
   - `INTERNAL_API_KEY` — shared secret to access `/api/ocr`.
   - `NEXT_PUBLIC_ENVIRONMENT` — optional; set to `development` locally.
 
-Next.js automatically loads `.env.local`. The API route will return a clear error if `ANTHROPIC_API_KEY` is missing.
-
 ### Deployment
 
-- Vercel: set `ANTHROPIC_API_KEY` and `INTERNAL_API_KEY` in Project Settings → Environment Variables.
+- Vercel: set `GEMINI_API_KEY` and `INTERNAL_API_KEY` in Project Settings → Environment Variables.
 - Do not commit real keys. `.env*` files are ignored by `.gitignore`.
 
 ## Learn More

@@ -11,7 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     const [fields, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
-    const model = (Array.isArray(fields.model) ? fields.model[0] : fields.model || 'claude') as 'claude' | 'gpt5'
     const doctypeRaw = Array.isArray(fields.doctype) ? fields.doctype[0] : fields.doctype
     const doctype = typeof doctypeRaw === 'string' ? (doctypeRaw as any) : undefined
     const file = Array.isArray(files.file) ? files.file[0] : files.file
@@ -20,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(400).json({ error: 'No file provided' })
 
     const buffer = fs.readFileSync(file.filepath)
-    const result = await Doc2Fields(buffer, file.mimetype, model, doctype)
+    const result = await Doc2Fields(buffer, file.mimetype, doctype)
 
     fs.unlinkSync(file.filepath)
     res.json(result)

@@ -8,9 +8,9 @@ const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false }
 
 export default function Home() {
   const [isAuth, setIsAuth] = useState(false)
-  const [model, setModel] = useState<'claude' | 'gpt5'>('claude')
-  const [json, setJson] = useState<any>(null)
-  const [megaJson, setMegaJson] = useState<any>(null)
+  const [model, setModel] = useState<'flash'>('flash')
+  const [json, setJson] = useState<unknown>(null)
+  const [megaJson, setMegaJson] = useState<unknown>(null)
   const [showMegaModal, setShowMegaModal] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [file, setFile] = useState<File | null>(null)
@@ -214,14 +214,13 @@ export default function Home() {
               )}
             </div>
 
-            <select
+            <button
+              type='button'
+              onClick={() => document.getElementById('fileInput')?.click()}
               className='w-full px-4 py-3 rounded-xl font-semibold text-sm border-2 border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 to-yellow-600/5 text-yellow-500 cursor-pointer hover:border-yellow-500/50 focus:outline-none focus:border-yellow-500/60 focus:ring-4 focus:ring-yellow-500/10 transition-all'
-              value={model}
-              onChange={e => setModel(e.target.value as 'claude' | 'gpt5')}
             >
-              <option value='claude' className='bg-[#0a0a0a] text-gray-200'>Claude Haiku 4.5</option>
-              <option value='gpt5' className='bg-[#0a0a0a] text-gray-200'>GPT-4o</option>
-            </select>
+              Seleccionar Archivo
+            </button>
           </div>
 
           <input
@@ -252,7 +251,7 @@ export default function Home() {
                 {elapsed}s transcurridos
               </p>
             </div>
-          ) : json ? (
+          ) : json && typeof json === 'object' ? (
             <div className='flex-1 p-6 overflow-hidden flex flex-col gap-4'>
               <div className='flex-1 bg-[#0c0c0c] border border-yellow-500/25 rounded-xl overflow-hidden shadow-2xl flex flex-col'>
                 <div className='px-4 py-3 border-b border-yellow-500/20 bg-[#0c0c0c] flex items-center justify-between gap-3'>
@@ -263,9 +262,9 @@ export default function Home() {
                       <div className='text-sm font-semibold text-gray-100 truncate'>Result</div>
                     </div>
                   </div>
-                  {json?.documents && json.documents.length > 0 && (
+                  {('documents' in json) && Array.isArray((json as any).documents) && (json as any).documents.length > 0 && (
                     <span className='text-[11px] text-yellow-500 bg-[#0a0a0a] px-2 py-1 rounded-md border border-yellow-500/30 shrink-0 font-semibold'>
-                      {json.documents.length} documento{json.documents.length > 1 ? 's' : ''}
+                      {(json as any).documents.length} documento{(json as any).documents.length > 1 ? 's' : ''}
                     </span>
                   )}
                 </div>

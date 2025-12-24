@@ -17,7 +17,7 @@ const PDFViewer = ({ fileUrl }: Props) => {
   const [showThumbs, setShowThumbs] = useState(true)
 
   useEffect(() => {
-    setPage(1)
+    setPage(p => (p === 1 ? p : 1))
   }, [fileUrl])
 
   return (
