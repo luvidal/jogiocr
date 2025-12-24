@@ -110,7 +110,7 @@ Rules:
   let parsed: unknown
   try {
     parsed = JSON.parse(text) as unknown
-  } catch (e) {
+  } catch {
     throw new Error(`Failed to parse AI response: ${text}`)
   }
 

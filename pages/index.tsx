@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import LoginModal from '@/components/LoginModal'
 
 const PDFViewer = dynamic(() => import('@/components/PDFViewer'), { ssr: false })
 
 export default function Home() {
   const [isAuth, setIsAuth] = useState(false)
-  const [model, setModel] = useState<'flash'>('flash')
   const [json, setJson] = useState<unknown>(null)
   const [activeDocKey, setActiveDocKey] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -36,7 +36,6 @@ export default function Home() {
     try {
       const form = new FormData()
       form.append('file', file)
-      form.append('model', model)
 
       const res = await fetch('/api/v1/ocr', {
         method: 'POST',
@@ -48,30 +47,27 @@ export default function Home() {
       const first = (data as any)?.documents?.[0]
       const firstKey = first ? `${first?.id || 'doc'}-${first?.docdate || 0}-0` : null
       setActiveDocKey(firstKey)
-        ; (data as any)?.files?.forEach((f: any) => {
-          if (!f?.base64 || !f?.filename) return
-          const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0))
-          const blob = new Blob([bytes], { type: 'application/pdf' })
-          const a = document.createElement('a')
-          a.href = URL.createObjectURL(blob)
-          a.download = f.filename
-          a.click()
-          setTimeout(() => URL.revokeObjectURL(a.href), 1000)
-        })
+      const files = (data as any)?.files
+      files?.forEach((f: any) => {
+        if (!f?.base64 || !f?.filename) return
+        const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0))
+        const blob = new Blob([bytes], { type: 'application/pdf' })
+        const a = document.createElement('a')
+        a.href = URL.createObjectURL(blob)
+        a.download = f.filename
+        a.click()
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+      })
     } catch (e: any) {
       setError(e.message)
     } finally {
       setLoading(false)
     }
-  }, [model, file])
-
-  useEffect(() => {
-    if (file) handleSend()
   }, [file])
 
   useEffect(() => {
     if (file) handleSend()
-  }, [model])
+  }, [file, handleSend])
 
 
   const handleFile = (f?: File) => {
@@ -120,7 +116,10 @@ export default function Home() {
 
           <div className='flex-1 p-6 overflow-auto flex flex-col gap-4'>
             <div
-              onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files?.[0]) }}
+              onDrop={e => {
+                e.preventDefault()
+                handleFile(e.dataTransfer.files?.[0])
+              }}
               onDragOver={e => e.preventDefault()}
               className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-start cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
             >
@@ -159,9 +158,12 @@ export default function Home() {
                       </div>
                     </div>
                     <div className='flex-1 overflow-auto flex items-center justify-center bg-[#0a0a0a] p-4'>
-                      <img
+                      <Image
                         src={preview}
                         alt={file.name}
+                        width={2000}
+                        height={2000}
+                        unoptimized
                         style={{ transform: `scale(${imageScale})` }}
                         className='max-w-full max-h-full object-contain rounded-lg shadow-lg'
                       />
@@ -210,7 +212,7 @@ export default function Home() {
             accept='image/*,application/pdf'
             className='hidden'
             onClick={e => {
-              ; (e.currentTarget.value as any) = ''
+              e.currentTarget.value = ''
             }}
             onChange={e => handleFile(e.target.files?.[0])}
           />
