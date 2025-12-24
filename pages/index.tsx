@@ -121,7 +121,7 @@ export default function Home() {
                 handleFile(e.dataTransfer.files?.[0])
               }}
               onDragOver={e => e.preventDefault()}
-              className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-start cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
+              className='h-full border border-dashed border-yellow-500/35 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-yellow-500/70 hover:bg-yellow-500/5 transition-all duration-300 group overflow-hidden'
             >
               {file ? (
                 preview && file.type === 'application/pdf' ? (
