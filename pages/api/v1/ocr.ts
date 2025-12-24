@@ -20,16 +20,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' })
 
   try {
-    const [fields, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
-    const doctypeRaw = Array.isArray(fields.doctype) ? fields.doctype[0] : fields.doctype
-    const doctype = typeof doctypeRaw === 'string' ? (doctypeRaw as any) : undefined
+    const [, files] = await formidable({ maxFileSize: 20 * 1024 * 1024 }).parse(req)
     const file = Array.isArray(files.file) ? files.file[0] : files.file
 
     if (!file?.filepath || !file?.mimetype)
       return res.status(400).json({ error: 'No file provided' })
 
     const buffer = fs.readFileSync(file.filepath)
-    const result = await Doc2Fields(buffer, file.mimetype, doctype)
+    const result = await Doc2Fields(buffer, file.mimetype)
 
     if (file.mimetype === 'application/pdf') {
       const pdf = await PDFDocument.load(buffer)

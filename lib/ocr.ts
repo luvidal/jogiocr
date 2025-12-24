@@ -11,8 +11,6 @@ type ReqDoc = {
   fields: JsonRecord
 }
 
-type DocType = ReqDoc['id']
-
 type DocSlice = {
   id: string
   docdate: string
@@ -23,11 +21,7 @@ type DocResult = {
   documents: DocSlice[]
 }
 
-export async function Doc2Fields(
-  buffer: Buffer,
-  mimetype: string,
-  doctype?: DocType
-): Promise<DocResult> {
+export async function Doc2Fields(buffer: Buffer, mimetype: string): Promise<DocResult> {
   const isImage = mimetype.startsWith('image/')
   const isPDF = mimetype === 'application/pdf'
   if (!isImage && !isPDF) throw new Error('Images and PDFs only')
@@ -36,38 +30,14 @@ export async function Doc2Fields(
     (acc, d) => (d?.id ? { ...acc, [d.id]: d } : acc),
     {}
   )
-  const schemaInfo = doctype ? schemas[doctype] : null
-  const campos = schemaInfo?.fields || {}
   const base64 = buffer.toString('base64')
 
-  const freq = schemaInfo?.freq || 'none'
-
-  const prompt = doctype
-    ? `Identify this Chilean document.
-
-Document type: ${doctype}
-Document frequency: ${freq}
-Expected fields: ${JSON.stringify(campos, null, 2)}
-
-Return ONLY valid JSON array:
-[
-  {
-    "id": "${doctype}",
-    "docdate": "YYYY-MM-DD",
-    "data": { ...fields }
-  }
-]
-
-Rules:
-- data MUST include the extracted values for the Expected fields (use null if not found)
-- Do not return an empty object for data
-- docdate is the relevant date found in the document (issued/signed)
-- If Document is frequency year, use YYYY-01-01
-- If Document frequency is month, use YYYY-MM-01
-- Else use the exact date found in the document`
-    : `Identify ALL document types in this Chilean PDF.
+  const prompt = `Identify ALL document types in this Chilean document.
 
 Allowed id values: ${(reqdocs as ReqDoc[])?.map(d => d?.id).filter(Boolean).join(', ')}
+
+For each detected document, extract its fields using this schema map:
+${JSON.stringify(schemas, null, 2)}
 
 Return ONLY valid JSON array:
 [
@@ -78,16 +48,15 @@ Return ONLY valid JSON array:
   }
 ]
 
-Rules:
-- One entry per detected document instance (repeat id if needed)
-- If none, return []
-- data MUST include extracted values for that document (use null if not found)
-- Do not return an empty object for data
-- docdate rules:
-  - relevant date found in the document (issued/signed)
-  - If the document frequency is year, use YYYY-01-01
-  - If the document frequency is month, use YYYY-MM-01
-  - Else use the exact date found in the document`
+Rules (priority order):
+1) Output ONLY valid JSON (no markdown, no extra text)
+2) One entry per detected document instance (repeat id if needed); if none return []
+3) data MUST include every schema field key for that id (use null if missing); never return {}
+4) docdate MUST be ISO 'YYYY-MM-DD' for DB
+   - use issued/signed date when present
+   - freq 'year' => 'YYYY-01-01'
+   - freq 'month' => 'YYYY-MM-01'
+   - else => exact date found`
   const parts = [
     { text: prompt },
     isPDF
