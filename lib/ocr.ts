@@ -7,7 +7,7 @@ type JsonRecord = Record<string, unknown>
 
 type ReqDoc = {
   id: string
-  freq: 'day' | 'month' | 'year' | 'none'
+  freq: 'day' | 'month' | 'year'
   fields: JsonRecord
 }
 

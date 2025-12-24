@@ -4,7 +4,7 @@ import fieldAliases from '@/data/field-aliases.json'
 
 type ReqDoc = {
     id: string
-    freq: 'day' | 'month' | 'year' | 'none'
+    freq: 'day' | 'month' | 'year'
     fields: Record<string, unknown>
 }
 

@@ -1,7 +1,7 @@
 [
     {
         "id": "cedula-identidad",
-        "freq": "none",
+        "freq": "day",
         "fields": {
             "rut": "string",
             "nombres": "string",
@@ -18,7 +18,7 @@
     },
     {
         "id": "certificado-nacimiento",
-        "freq": "none",
+        "freq": "day",
         "fields": {
             "folio": "string",
             "codigo_verificacion": "string",
@@ -55,11 +55,21 @@
         "id": "liquidacion-sueldo",
         "freq": "month",
         "fields": {
-            "rut": "string",
-            "contribuyente": "string",
-            "año": "number",
-            "honorario_bruto": "number",
-            "total_liquido": "number"
+            "nombre": "RAMIREZ MUÑOZ NICOLE ALEJANDRA",
+            "rut": "19409381-0",
+            "labor": "AUXILIAR DE ASEO",
+            "dias_trabajados": "30",
+            "email": "someone@gmail.com",
+            "sueldo_base_sub_general": "638.572",
+            "asignacion_ley_19464": "35.989",
+            "total_imponible": "674.561",
+            "afp_nombre": "AFP Modelo",
+            "afp_pago": "71.369",
+            "isapre_nombre": "FONASA",
+            "isapre_pago": "10.000",
+            "total_descto_previsionals": "118.588",
+            "total_hab_liquido": "555.973",
+            "total_a_pagar": "555.973"
         }
     },
     {
@@ -69,7 +79,8 @@
             "rut": "string",
             "nombres": "string",
             "año_tributario": "number",
-            "numero_folio": "string"
+            "numero_folio": "string",
+            "valor_estimado_clp": "number"
         }
     },
     {
@@ -102,8 +113,7 @@
             "marca": "string",
             "modelo": "string",
             "año": "number",
-            "rut_propietario": "string",
-            "valor_estimado_clp": "number"
+            "rut_propietario": "string"
         }
     },
     {
@@ -117,7 +127,7 @@
     },
     {
         "id": "certificado-matrimonio",
-        "freq": "none",
+        "freq": "day",
         "fields": {
             "folio": "string",
             "marido_nombre": "string",
@@ -129,7 +139,7 @@
     },
     {
         "id": "contrato-trabajo",
-        "freq": "none",
+        "freq": "day",
         "fields": {
             "empleador_nombre": "string",
             "empleador_rut": "string",
