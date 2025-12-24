@@ -51,7 +51,8 @@ export default function Home() {
       files?.forEach((f: any) => {
         if (!f?.base64 || !f?.filename) return
         const bytes = Uint8Array.from(atob(f.base64), c => c.charCodeAt(0))
-        const blob = new Blob([bytes], { type: 'application/pdf' })
+        const mimeType = f.mimetype || 'application/pdf'
+        const blob = new Blob([bytes], { type: mimeType })
         const a = document.createElement('a')
         a.href = URL.createObjectURL(blob)
         a.download = f.filename

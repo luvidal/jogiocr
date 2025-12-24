@@ -45,16 +45,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const out = await Promise.all(
         slices.map(async (d, i) => {
           const bytes = await slicePdf(buffer, d.start, d.end)
+          const docdate = typeof (result.documents?.[i] as any)?.docdate === 'string' ? (result.documents?.[i] as any).docdate : 'unknown-date'
           return {
             id: d.id,
             start: d.start,
             end: d.end,
-            filename: `${d.id}-${i + 1}.pdf`,
+            filename: `${docdate}_${d.id}.pdf`,
             base64: Buffer.from(bytes).toString('base64')
           }
         })
       )
 
+      fs.unlinkSync(file.filepath)
+      return res.json({ ...result, files: out })
+    }
+
+    if (file.mimetype?.startsWith('image/')) {
+      const docs = (result.documents || []).filter(d => d && typeof d === 'object')
+      const out = docs.map(d => {
+        const id = typeof (d as any).id === 'string' ? (d as any).id : 'document'
+        const docdate = typeof (d as any).docdate === 'string' ? (d as any).docdate : 'unknown-date'
+        const ext = file.mimetype?.split('/')[1] || 'jpg'
+        return {
+          id,
+          filename: `${docdate}_${id}.${ext}`,
+          base64: buffer.toString('base64'),
+          mimetype: file.mimetype
+        }
+      })
       fs.unlinkSync(file.filepath)
       return res.json({ ...result, files: out })
     }

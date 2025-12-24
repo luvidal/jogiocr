@@ -14,6 +14,8 @@ type ReqDoc = {
 type DocSlice = {
   id: string
   docdate: string
+  start?: number
+  end?: number
   data: JsonRecord | JsonRecord[]
 }
 
@@ -44,15 +46,18 @@ Return ONLY valid JSON array:
   {
     "id": "cedula-identidad",
     "docdate": "YYYY-MM-DD",
+    "start": 1,
+    "end": 2,
     "data": { ...fields }
   }
 ]
 
-Rules (priority order):
-1) Output ONLY valid JSON (no markdown, no extra text)
-2) One entry per detected document instance (repeat id if needed); if none return []
-3) data MUST include every schema field key for that id (use null if missing); never return {}
-4) docdate MUST be ISO 'YYYY-MM-DD' for DB
+Rules (CRITICAL - follow exactly):
+1) Output ONLY valid JSON array (no markdown, no extra text)
+2) One entry per detected document instance (repeat id if multiple); if none return []
+3) ${isPDF ? 'FOR PDFs: start and end are MANDATORY integer page numbers (1-indexed) where document appears. MUST be included for every document!' : 'For images: omit start/end'}
+4) data MUST include every schema field key for that id (use null if missing); never return {}
+5) docdate MUST be ISO 'YYYY-MM-DD' for DB
    - use issued/signed date when present
    - freq 'year' => 'YYYY-01-01'
    - freq 'month' => 'YYYY-MM-01'
@@ -92,6 +97,8 @@ Rules (priority order):
       return {
         id: typeof obj.id === 'string' ? obj.id : '',
         docdate: typeof obj.docdate === 'string' ? obj.docdate : '',
+        start: typeof obj.start === 'number' ? obj.start : undefined,
+        end: typeof obj.end === 'number' ? obj.end : undefined,
         data: (obj.data as JsonRecord | JsonRecord[]) || {}
       }
     })
